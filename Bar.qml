@@ -67,16 +67,21 @@ Scope {
           right: parent.right
         }
 
-        children: [BarFill{}, Network{
-          id:net
-          popup: controlPanel
-        }, Battery{}, BarFill{}] 
+        children: [
+          BarFill{}, 
+          Network{
+            id:net
+            popup: controlPanel
+          }, 
+          Battery{}, 
+          TrayWidget{}, 
+          BarFill{} ] 
       }
 
-      NetworkPopup {
-        id: netPopup
-        screen: barWindow.screen
-      }
+      // NetworkPopup {
+      //   id: netPopup
+      //   screen: barWindow.screen
+      // }
 
       ControlPanel {
         id: controlPanel

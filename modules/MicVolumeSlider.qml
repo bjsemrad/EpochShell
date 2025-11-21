@@ -82,7 +82,7 @@ Rectangle {
             width: 10
             height: 10
             radius: 6
-            color: T.Config.red
+            color: T.Config.fg
             anchors.verticalCenter: parent.verticalCenter
         }
 
@@ -95,7 +95,7 @@ Rectangle {
             width: volume.position * volume.width
             height: 10
             radius: height / 2
-            color: T.Config.red
+            color: T.Config.fg
         }
     }
     // }
