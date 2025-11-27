@@ -7,10 +7,32 @@ import Quickshell.Widgets
 import "../commonwidgets"
 import "../modules"
 import "../theme" as T
+import "../services" as S
 
 HoverPopupWindow {
     id: networkPopup
     trigger: trigger
+    
+    function refresh() {
+        S.NetworkMonitor.refresh()
+    }
+
+    Timer {
+        id: refreshTimer
+        interval: 5000  
+        repeat: true
+        running: networkPopup.visible
+
+        onTriggered: {
+            refresh()
+        }
+    }
+
+    onVisibleChanged: {
+        if (visible){
+            refresh()
+        }
+    }
 
     Row {
         id: networkContent

@@ -13,7 +13,7 @@ Rectangle {
     height: 40
     radius: 6
     color: "transparent"
- 
+
     Rectangle {
             id: iconTile
             width: 40

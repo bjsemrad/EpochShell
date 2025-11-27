@@ -4,6 +4,8 @@ import Quickshell.Widgets
 import Quickshell
 import Quickshell.Io
 import "../theme" as T
+import "../services" as S
+import "../commonwidgets"
 
 Rectangle {
     id: root
@@ -19,12 +21,12 @@ Rectangle {
     // network properties
     property string ssid: ""
 
-     // process to connect to this network
-    Process {
-        id: connectProcess
-        command: ["nmcli", "connection", "up", root.ssid]
-    }
-
+    //  // process to connect to this network
+    // Process {
+    //     id: connectProcess
+    //     command: ["nmcli", "connection", "up", root.ssid]
+    // }
+    //
     Row {
         spacing: 10
         anchors.verticalCenter: parent.verticalCenter
@@ -50,7 +52,6 @@ Rectangle {
                     width: parent.width
 
 
-
                     IconImage {
                         source:  Quickshell.iconPath("network-wireless-symbolic")
                         anchors.verticalCenter: parent.verticalCenter
@@ -65,6 +66,10 @@ Rectangle {
                         font.pixelSize: 13
                     }
 
+                    Spinner {
+                        id: wifiSpinner
+                        running: S.NetworkMonitor.connecting && S.NetworkMonitor.connectingTo === root.ssid
+                    }
                 }
                 MouseArea {
                     id: mouseArea
@@ -72,8 +77,7 @@ Rectangle {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        // fire and forget
-                        connectProcess.startDetached()
+                        S.NetworkMonitor.connectTo(root.ssid)
                     }
                 }
         }
@@ -95,8 +99,7 @@ Rectangle {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    console.log("here")
-                 //           connectProcess.startDetached()
+                    S.NetworkMonitor.deleteNetwork(root.ssid)
                 }
            }
         }

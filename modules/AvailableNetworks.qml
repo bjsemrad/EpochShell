@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Widgets
 import "../services" as S
 import "../theme" as T
+import "../commonwidgets"
 
 Rectangle {
     id: networksSection
@@ -21,10 +22,11 @@ Rectangle {
         target: networkPanel
         onVisibleChanged: if (!networkPanel.visible) networksSection.expanded = false
     }
+
     Column {
+        anchors.margins: 4
         anchors.fill: parent
         spacing: 6
-        anchors.bottomMargin: 12
         Rectangle {
             id: header
             implicitHeight: 20
@@ -36,8 +38,9 @@ Rectangle {
                 Text {
                     id: avText
                     text: "Available Networks"
-                    color: "white"
+                    color: T.Config.fg
                     font.pixelSize: 13
+                    Layout.leftMargin: 4
                 }
 
                 Text {
@@ -46,17 +49,28 @@ Rectangle {
                     font.pixelSize: 12
                     anchors.left: avText.left + 20 
                 }
+
+                Spinner {
+                    id: wifiSpinner
+                    running: S.NetworkMonitor.scanning
+                }
             }
+
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
 
                 onClicked: function() {
+                    if(!networksSection.expanded) {
+                        S.NetworkMonitor.refreshAvailable()
+                    }
                     networksSection.expanded = !networksSection.expanded
+
                 }
             }
         }
+
 
         Rectangle {
             id: listContainer

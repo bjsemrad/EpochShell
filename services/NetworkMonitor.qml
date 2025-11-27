@@ -9,6 +9,9 @@ Item {
     // === PUBLIC PROPERTIES ===
     //
     property bool wifiEnabled: true      // no direct nmcli output — assume true
+    property bool scanning: false      // no direct nmcli output — assume true
+    property bool connecting: false
+    property string connectingTo: ""
     property bool connected: false
     property string ssid: ""
     property int strength: 0
@@ -21,22 +24,15 @@ Item {
 
 
 
-    //
-    // === TIMED REFRESH ===
-    //
-    // Timer {
-        // id: refreshTimer
-        // interval: 4000    // 4 seconds
-        // running: true
-        // repeat: true
-        // onTriggered: net.refresh()
-    // }
+    Timer {
+        id: refreshTimer
+        interval: 5000    // 4 seconds
+        running: true
+        repeat: true
+        onTriggered: refreshStatus()
+    }
 
     Component.onCompleted: net.refresh()
-
-    //
-    // === Command Objects ===
-    //
 
     Process {
         id: wifiStatusCmd
@@ -55,6 +51,7 @@ Item {
         stdout: StdioCollector {
             onStreamFinished: {
                 net._parseScan(text)
+                scanning = false
             }
         }
     }
@@ -64,15 +61,20 @@ Item {
         command: "nmcli"
         stdout: StdioCollector {
             onStreamFinished: {
-               net.refresh()
-                // net._parseScan(text)
+                net.refresh()
+                connecting = false
+                connectingTo = ""
             }
         }
+    }
 
+    Process {
+        id: deleteCmd
+        command: ["nmcli", "connection", "delete"]
+        onExited: {
+            refreshSaved()
+        }
 
-        //onExited: {
-            // trigger refresh after connect attempt
-        //}
     }
 
        // grab saved connections once at startup
@@ -106,29 +108,40 @@ Item {
         }
     }
     
-    function refreshSavedNetworks() {
-        savedNetworks.running = true
-    }
 
-
-
-    //
-    // === API ===
-    //
-    function refresh() {
-        savedNetworks.running = true
-        wifiStatusCmd.running = true
+    function refreshAvailable(callback) {
+        scanning = true
         scanCmd.running = true
     }
 
+    function refreshSaved() {
+        savedWifiModel.clear()  
+        savedNetworks.running = true
+    }
+
+    function refreshStatus() {
+        wifiStatusCmd.running = true
+    }
+
+    function refresh() {
+        savedNetworks.running = true
+        wifiStatusCmd.running = true
+    }
+
     function connectTo(ssidName) {
+        connecting = true
+        connectingTo = ssidName
         connectCmd.command = ["nmcli", "device", "wifi", "connect", ssidName]
         connectCmd.running = true
     }
 
-    //
-    // === PARSING ===
-    //
+     function deleteNetwork(ssidName) {
+        deleteCmd.command = ["nmcli", "connection", "delete", ssidName]
+        deleteCmd.running = true
+    }
+
+
+
     function _parseWifiStatus(text) {
         let lines = text.trim().split("\n")
         if (lines.length === 0) {

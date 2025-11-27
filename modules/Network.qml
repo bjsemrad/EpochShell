@@ -19,117 +19,46 @@ Rectangle {
     // wired to popup from the bar
     property var popup
     // exported so popup can highlight the active SSID
-    property string activeSsid: ""
-    property bool wiredConnected: false
-    property bool wifiConnected: false
-    property int wifiSignal: 0           // 0–100
-    property string iconName: "network-offline-symbolic"
+    // property string activeSsid: ""
+    // property bool wiredConnected: false
+    // property bool wifiConnected: false
+    // property int wifiSignal: 0           // 0–100
+    // property string iconName: "network-offline-symbolic"
 
-    // --- update cadence
-    Timer {
-        id: poll
-        interval: 3000
-        repeat: true
-        running: true
-        onTriggered: updateStatus()
-    }
-    Component.onCompleted: updateStatus()
+    // // --- update cadence
+    // Timer {
+    //     id: poll
+    //     interval: 5000
+    //     repeat: true
+    //     running: true
+    //     onTriggered: updateIcon()
+    // }
 
-    function updateStatus() {
-        // 1) Device status for wired/wifi connection states
-        devStatus.running = true
-        // 2) Active connections to get active SSID name
-        activeConn.running = true
-        // 3) Wi-Fi scan to get signal for active SSID
-        wifiScan.running = true
-    }
-
-    // nmcli - device status
-    Process {
-        id: devStatus
-        running: false
-        command: ["nmcli", "-t", "-f", "DEVICE,TYPE,STATE", "device", "status"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let lines = text.trim().split("\n")
-                let wifiState = "disconnected"
-                let ethState = "disconnected"
-                for (let l of lines) {
-                    const [dev, type, state] = l.split(":")
-                    if (type === "wifi") wifiState = state
-                    if (type === "ethernet") ethState = state
-                }
-                root.wifiConnected  = (wifiState === "connected")
-                root.wiredConnected = (ethState === "connected")
-                updateIcon()
-            }
-        }
-    }
-
-    // nmcli - active connections (NAME is SSID on most systems)
-    Process {
-        id: activeConn
-        running: false
-        command: ["nmcli", "-t", "-f", "ACTIVE,NAME,DEVICE,TYPE", "connection", "show", "--active"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.activeSsid = ""
-                const lines = text.trim().split("\n")
-                for (let l of lines) {
-                    const [active, name, dev, type] = l.split(":")
-                    if (active === "yes" && (type === "wifi" || type.indexOf("802-11-wireless") !== -1)) {
-                        root.activeSsid = name
-                        break
-                    }
-                }
-            }
-        }
-    }
-
-    // nmcli - wifi scan (to get signal level for active SSID)
-    Process {
-        id: wifiScan
-        running: false
-        command: ["nmcli", "--rescan", "yes", "-t", "-f", "IN-USE,SIGNAL,SSID", "device", "wifi", "list"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let best = 0
-                const lines = text.trim().split("\n").filter(s => s.length > 0)
-                for (let l of lines) {
-                    // IN-USE can be "*" on the active row
-                    const parts = l.split(":")
-                    // Format can be "*:77:/dev/net" or ":60:SomeSSID"
-                    const inuse = parts[0] === "*"    // some distros add '*' here
-                    const signal = parseInt(parts[1] || "0")
-                    const ssid = parts.slice(2).join(":")  // SSIDs may contain ':'
-                    if (inuse || (ssid && ssid === root.activeSsid)) {
-                        best = Math.max(best, signal)
-                    }
-                }
-                root.wifiSignal = best
-                updateIcon()
-            }
-        }
-    }
-
-    function wifiBars(sig) {
-        if (sig >= 75) return "network-wireless-signal-excellent-symbolic"
-        if (sig >= 50) return "network-wireless-signal-high-symbolic"
-        if (sig >= 25) return "network-wireless-signal-medium-symbolic"
-        if (sig >   0) return "network-wireless-signal-low-symbolic"
-        return "network-wireless-offline-symbolic"
-    }
-
-    function updateIcon() {
-        if (root.wiredConnected) {
-            iconName = "network-wired-symbolic"
-        } else if (root.wifiConnected) {
-            iconName = wifiBars(root.wifiSignal)
-        } else {
-            iconName = "network-offline-symbolic"
-        }
-    }
-
+    // onVisibleChanged: {
+    //     if (visible){
+    //         // updateIcon()
+    //     }
+    // }
+    //
+    // function wifiBars(sig) {
+    //     if (sig >= 75) return "network-wireless-signal-excellent-symbolic"
+    //     if (sig >= 50) return "network-wireless-signal-high-symbolic"
+    //     if (sig >= 25) return "network-wireless-signal-medium-symbolic"
+    //     if (sig >   0) return "network-wireless-signal-low-symbolic"
+    //     return "network-wireless-low-symbolic"
+    // }
+    //
+    // function updateIcon() {
+    //     // if (root.wiredConnected) {
+    //         // iconName = "network-wired-symbolic"
+    //     //} else
+    //     if (S.NetworkMonitor.connected) {
+    //         iconName = wifiBars(S.NetworkMonitor.strength)
+    //     } else {
+    //         iconName = "network-offline-symbolic"
+    //     }
+    // }
+    //
     MouseArea {
         anchors.fill: parent
         onClicked: {
@@ -155,15 +84,24 @@ Rectangle {
     //         root.width * 12,                       // popup width (tweak)
     //         root.window?.screen)
     // }
+    //
 
     Row {
         id: inner
         anchors.centerIn: parent
         anchors.rightMargin: 10
         spacing: 5 
-         IconImage {
-        implicitSize: 18
-        source: Quickshell.iconPath(root.iconName)
+        IconImage {
+            implicitSize: 18
+            source: {
+                const s = S.NetworkMonitor.strength
+
+                if (!S.NetworkMonitor.connected) return Quickshell.iconPath("network-offline-symbolic")
+                if (s >= 75) return Quickshell.iconPath("network-wireless-signal-excellent-symbolic")
+                if (s >= 50) return Quickshell.iconPath("network-wireless-signal-good-symbolic")
+                if (s >= 25) return Quickshell.iconPath("network-wireless-signal-ok-symbolic")
+                return Quickshell.iconPath("network-wireless-signal-weak-symbolic")
+            }
          }
     }
 }
