@@ -78,7 +78,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     checked: S.NetworkMonitor.wifiEnabled
                     onToggled: {
-                        S.NetworkMonitor.wifiEnabled = checked
+                        S.NetworkMonitor.disableWifi(wifiSwitch.checked)
                     }
                 }
 
@@ -112,15 +112,5 @@ Rectangle {
                 }
             }
         }
-        // RoundedSwitch{
-        //     id: wifiSwitch
-        //     visible: mode === "wifi"
-        //     anchors.verticalCenter: parent.verticalCenter
-        //     anchors.right: parent.right
-        //     checked: S.NetworkMonitor.wifiEnabled
-        //     onToggled: {
-        //         S.NetworkMonitor.wifiEnabled = checked
-        //     }
-        // }
      }
 }

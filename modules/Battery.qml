@@ -4,7 +4,7 @@ import Quickshell
 import Quickshell.Widgets
 import Quickshell.Services.UPower
 import "../commonwidgets" as CW
-
+import "../theme" as T
 RowLayout {
     id: root
 
@@ -50,7 +50,7 @@ RowLayout {
         anchors.verticalCenter: parent.verticalCenter
         height: 20
         width: 20
-        color: "white"
+        color: T.Config.fg
     }
 
 

@@ -25,7 +25,7 @@ Rectangle {
         anchors.centerIn: parent
         anchors.rightMargin: 10
         spacing: 5 
-         Text {
+        Text {
             text:  {
                 const s = S.NetworkMonitor.strength
 
@@ -37,20 +37,7 @@ Rectangle {
             }
             font.pixelSize: 18
             anchors.verticalCenter: parent.verticalCenter
-            color: "white"
+            color: T.Config.fg
         }
-
-        // IconImage {
-        //     implicitSize: 18
-        //     source: {
-        //         const s = S.NetworkMonitor.strength
-        //
-        //         if (!S.NetworkMonitor.connected) return Quickshell.iconPath("network-offline-symbolic")
-        //         if (s >= 75) return Quickshell.iconPath("network-wireless-signal-excellent-symbolic")
-        //         if (s >= 50) return Quickshell.iconPath("network-wireless-signal-good-symbolic")
-        //         if (s >= 25) return Quickshell.iconPath("network-wireless-signal-ok-symbolic")
-        //         return Quickshell.iconPath("network-wireless-signal-weak-symbolic")
-        //     }
-        //  }
     }
 }

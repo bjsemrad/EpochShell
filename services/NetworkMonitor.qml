@@ -192,7 +192,6 @@ Item {
     }
 
 
-              
     Process {
         id: editorProcess
         command: ["nm-connection-editor"]
@@ -200,6 +199,17 @@ Item {
 
     function editNetworks() {
         editorProcess.startDetached()
+    }
+
+
+    Process {
+        id: disableWifi
+    }
+
+    function disableWifi(on){
+        wifiEnabled = on
+        disableWifi.command = ["nmcli", "radio", "wifi", wifiEnabled ? "on" : "off"]
+        disableWifi.running = true
     }
 
 }
