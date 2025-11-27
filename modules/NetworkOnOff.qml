@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Widgets
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell.Io
 import "../theme" as T
 import "../services" as S
 import "../commonwidgets"
@@ -47,7 +48,7 @@ Rectangle {
         Column {
             spacing: 20
             anchors.verticalCenter: parent.verticalCenter
-
+            width: parent.width*.75
             Text {
                 text: mode === "wifi" ? "Wi-Fi" : "Ethernet"
                 color: "white"
@@ -56,55 +57,70 @@ Rectangle {
             }
         }
 
-        RoundedSwitch{
-            id: wifiSwitch
-            visible: mode === "wifi"
-            anchors.verticalCenter: parent.verticalCenter
+        Column {
+            width: parent.width*.25
+            height: parent.height
             anchors.right: parent.right
-            checked: S.NetworkMonitor.wifiEnabled
-            onToggled: {
-                S.NetworkMonitor.wifiEnabled = checked
+            anchors.rightMargin: 10
+            spacing: 8
+            Row {
+                spacing: 10
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.right: parent.right
+                anchors.left: parent.left
+                width: parent.width
+                height: parent.height
+
+
+                RoundedSwitch{
+                    id: wifiSwitch
+                    visible: mode === "wifi"
+                    anchors.verticalCenter: parent.verticalCenter
+                    checked: S.NetworkMonitor.wifiEnabled
+                    onToggled: {
+                        S.NetworkMonitor.wifiEnabled = checked
+                    }
+                }
+
+
+                Rectangle {
+                    id: networkSettings
+                    implicitWidth: 40;
+                    implicitHeight: 40
+                    radius: 20
+                    border.width: 2
+                    border.color: settingsMouseArea.containsMouse ? T.Config.blue : "transparent"
+                    color: "transparent"
+                    anchors.verticalCenter: parent.verticalCenter
+                    Text {
+                        text: ""
+                        font.pixelSize: 18
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.centerIn: parent
+                        color: "white"
+                    }
+                    MouseArea {
+                        id: settingsMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            S.NetworkMonitor.editNetworks()
+                        }
+
+                    }
+                }
             }
         }
-
-        // Wi-Fi toggle (only for wifi mode)
-        // Switch {
-            // id: wifiSwitch
-
-                // if you later add a real nmcli radio toggle in the singleton,
-                // call it here (e.g. net.toggleWifi(checked))
-        // }
-     }
-
-        // For ethernet mode, just show a status pill (no toggle)
-        // Rectangle {
-        //     visible: mode === "ethernet"
+        // RoundedSwitch{
+        //     id: wifiSwitch
+        //     visible: mode === "wifi"
         //     anchors.verticalCenter: parent.verticalCenter
-        //     radius: 8
-        //     height: 20
-        //     width: implicitWidth
-        //     color: S.NetworkMonitor.connected ? "#2c4f2c" : "#3a3a3e"
-        //     border.color: "transparent"
-        //
-        //     Text {
-        //         anchors.centerIn: parent
-        //         text: S.NetworkMonitor.connected ? "Connected" : "Not connected"
-        //         color: S.NetworkMonitor.connected ? "#a6e3a1" : "#c7c7cb"
-        //         font.pointSize: 9
+        //     anchors.right: parent.right
+        //     checked: S.NetworkMonitor.wifiEnabled
+        //     onToggled: {
+        //         S.NetworkMonitor.wifiEnabled = checked
         //     }
         // }
-
-    // MouseArea {
-    //     anchors.fill: parent
-    //     hoverEnabled: true
-    //     cursorShape: Qt.PointingHandCursor
-    //     onClicked: root.activated()
-    //
-    //     Rectangle {
-    //         anchors.fill: parent
-    //         radius: 8
-    //         color: "transparent"//hovered ? "#2b2b2f" : "transparent"
-    //         z: -1
-    //     }
-    // }
+     }
 }

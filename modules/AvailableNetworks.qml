@@ -77,7 +77,7 @@ Rectangle {
             radius: 6
             color: "#181818"
             clip: true
-            border.width: 1
+            border.width: 2
             border.color: T.Config.bg2
             width: parent.width
             implicitHeight: networksSection.expanded
@@ -99,16 +99,17 @@ Rectangle {
                 interactive: true
 
                 delegate: Rectangle {
-                    width: ListView.view.width
+                    width: ListView.view.width*.9
                     implicitHeight: 30
                     color: "transparent"
-                    border.width: 1
+                    border.width: 2
                     radius: 6
                     anchors.margins: 10
                     border.color: mouseArea.containsMouse ? T.Config.blue : "transparent"
 
                     Row {
                         anchors.fill: parent
+                        width: parent.width
                         anchors.margins: 10
                         spacing: 8
 

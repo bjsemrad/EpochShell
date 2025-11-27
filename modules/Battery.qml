@@ -10,14 +10,14 @@ RowLayout {
 
     property real percentage: 0
     property bool charging: false
-    property string iconName: ""
+    property string icon: ""
     property color color: (!charging && percentage < 20) ? "red" : "white"
 
     Component.onCompleted: {
         if (UPower.displayDevice) {
             percentage = UPower.displayDevice.percentage
             charging   = (UPower.displayDevice.state === UPowerDeviceState.Charging)
-            iconName   = iconForBattery()
+            icon   = iconForBattery()
         }
     }
 
@@ -26,36 +26,39 @@ RowLayout {
 
         function onPercentageChanged() {
             root.percentage = UPower.displayDevice.percentage
-            root.iconName = iconForBattery()
+            root.icon = iconForBattery()
         }
 
         function onStateChanged() {
             root.charging = (UPower.displayDevice.state === UPowerDeviceState.Charging)
-            root.iconName = iconForBattery()
+            root.icon = iconForBattery()
         }
     }
 
     function iconForBattery() {
       let pct = Math.round(root.percentage > 0 ? root.percentage * 100 : 1)
-      let charging = root.charging
-      function pick(base) {
-          return charging
-            ? `${base}-charging-symbolic`
-            : `${base}-symbolic`
-          }
-
-      if (pct > 95) return pick("battery-full")
-      if (pct > 70) return pick("battery-good")
-      if (pct > 45) return pick("battery-medium")
-      if (pct > 20) return pick("battery-low")
-      if (pct > 5)  return pick("battery-caution")
-      return pick("battery-empty")
+      if (pct > 95) return root.charging ? "󰂋" : "󰁹"
+      if (pct > 70) return root.charging ? "󰢞" : "󰂀"
+      if (pct > 45) return root.charging ? "󰂈" : "󰁽"
+      if (pct > 20) return root.charging ? "󰂆" : "󰁻"
+      if (pct > 5)  return root.charging ? "󰢜" : "󰁺"
     }
 
-    IconImage {
-        implicitSize: 16
-        source: Quickshell.iconPath(root.iconName)
+    Text {
+        text:root.icon
+        font.pixelSize: 18
+        anchors.verticalCenter: parent.verticalCenter
+        height: 20
+        width: 20
+        color: "white"
     }
+
+
+    // IconImage {
+    //     implicitSize: 16
+    //     anchors.verticalCenter: parent.verticalCenter
+    //     source: Quickshell.iconPath(root.iconName)
+    // }
 
     // Text {
     //     text: `${Math.round(percentage)}%`

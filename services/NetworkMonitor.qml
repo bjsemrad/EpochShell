@@ -191,4 +191,15 @@ Item {
         accessPoints = Object.values(map).sort((a, b) => b.strength - a.strength)
     }
 
+
+              
+    Process {
+        id: editorProcess
+        command: ["nm-connection-editor"]
+    }
+
+    function editNetworks() {
+        editorProcess.startDetached()
+    }
+
 }

@@ -37,10 +37,10 @@ Rectangle {
         height: parent.height
 
         Rectangle {
-            border.width: 1
+            border.width: 2
             radius: 6
             border.color: mouseArea.containsMouse ? T.Config.blue : "transparent"
-            implicitWidth: parent.width*.9
+            implicitWidth: parent.width
             implicitHeight: parent.height
             color: "transparent"
              Row {
@@ -81,38 +81,5 @@ Rectangle {
                     }
                 }
         }
-
-        Rectangle {
-            implicitHeight: 18
-            implicitWidth: 18
-            color: "transparent"
-            anchors.verticalCenter: parent.verticalCenter
-            IconImage {
-                source:  Quickshell.iconPath("window-close-symbolic")
-                anchors.verticalCenter: parent.verticalCenter
-                 width: 18
-                height: 18
-            }
-            MouseArea {
-                id: mouseArea2
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    S.NetworkMonitor.deleteNetwork(root.ssid)
-                }
-           }
-        }
     }
-    //
-    //  MouseArea {
-    //     id: mouseArea
-    //     anchors.fill: parent
-    //     hoverEnabled: true
-    //     cursorShape: Qt.PointingHandCursor
-    //     onClicked: {
-    //         // fire and forget
-    //         connectProcess.startDetached()
-    //     }
-    // }
 }
