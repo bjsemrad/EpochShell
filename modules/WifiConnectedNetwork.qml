@@ -45,7 +45,7 @@ Rectangle {
         }
 
         Text {
-            text: S.NetworkMonitor.connected ? S.NetworkMonitor.ssid : "Disconnected"
+            text: S.NetworkMonitor.wifiConnected ? S.NetworkMonitor.ssid : "Disconnected"
             color: "white"
             font.pixelSize: 16
             anchors.verticalCenter: parent.verticalCenter
