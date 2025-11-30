@@ -9,16 +9,10 @@ import "./theme" as T
 Scope {
     id: root
 
-    //
-    // ==== BRIGHTNESS STATE ====
-    //
     property real brightness: 0.0      // 0‒1 normalized
     property bool initialized: false
     property bool shouldShowOsd: false
 
-    //
-    // ==== CHECK IF BACKLIGHT EXISTS ====
-    //
     property bool hasBacklight: false
 
     Process {
@@ -36,11 +30,6 @@ Scope {
         }
     }
 
-    //
-    // ==== GET BRIGHTNESS VALUE ====
-    // brightnessctl g → current
-    // brightnessctl m → max
-    //
     Process {
         id: backlightGetValueProc
         running: false
@@ -67,9 +56,6 @@ Scope {
         }
     }
 
-    //
-    // ==== POLLING TIMER ====
-    //
     Timer {
         id: pollTimer
         interval: 250
@@ -92,9 +78,6 @@ Scope {
         onTriggered: root.shouldShowOsd = false
     }
 
-    //
-    // ==== UI ====
-    //
     LazyLoader {
         active: root.shouldShowOsd
 
@@ -120,9 +103,12 @@ Scope {
                         rightMargin: 15
                     }
 
-                    IconImage {
-			    implicitSize: 30
-			    source: Quickshell.iconPath("weather-clear-symbolic")
+
+                    Text {
+                        text: ""
+                        font.pixelSize: 30
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: "white"
                     }
 
                     Rectangle {

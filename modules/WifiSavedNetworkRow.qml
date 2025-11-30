@@ -15,18 +15,9 @@ Rectangle {
     radius: 6
     height: 30
     color: "transparent"
-    // border.width: 1
-    // border.color: mouseArea.containsMouse ? T.Config.blue : "transparent"
 
-    // network properties
     property string ssid: ""
 
-    //  // process to connect to this network
-    // Process {
-    //     id: connectProcess
-    //     command: ["nmcli", "connection", "up", root.ssid]
-    // }
-    //
     Row {
         spacing: 10
         anchors.verticalCenter: parent.verticalCenter
@@ -37,9 +28,9 @@ Rectangle {
         height: parent.height
 
         Rectangle {
-            border.width: 2
+            border.width: T.Config.selectedBorderWidth
             radius: 6
-            border.color: mouseArea.containsMouse ? T.Config.blue : "transparent"
+            border.color: mouseArea.containsMouse ? T.Config.fg : "transparent"
             implicitWidth: parent.width
             implicitHeight: parent.height
             color: "transparent"
@@ -68,7 +59,7 @@ Rectangle {
 
                     Spinner {
                         id: wifiSpinner
-                        running: S.NetworkMonitor.connecting && S.NetworkMonitor.connectingTo === root.ssid
+                        running: S.NetworkMonitor.wifiConnecting && S.NetworkMonitor.wifiConnectingTo === root.ssid
                     }
                 }
                 MouseArea {

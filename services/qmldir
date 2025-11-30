@@ -1,3 +1,4 @@
 singleton NetworkMonitor 1.0 NetworkMonitor.qml
 singleton PopupManager 1.0 PopupManager.qml
+singleton Tailscale 1.0 Tailscale.qml
 

@@ -54,22 +54,15 @@ Scope {
 		onTriggered: root.shouldShowOsd = false
 	}
 
-	// The OSD window will be created and destroyed based on shouldShowOsd.
-	// PanelWindow.visible could be set instead of using a loader, but using
-	// a loader will reduce the memory overhead when the window isn't open.
 	LazyLoader {
 		active: root.shouldShowOsd
 
 		PanelWindow {
-			// Since the panel's screen is unset, it will be picked by the compositor
-			// when the window is created. Most compositors pick the current active monitor.
 
 			anchors {
-				// right: true
 				top: true
 			}
 			margins {
-				// right: 50
 				top:50
 			}
 			exclusiveZone: 0
@@ -78,7 +71,6 @@ Scope {
 			implicitHeight: 75
 			color: "transparent"
 
-			// An empty click mask prevents the window from blocking mouse events.
 			mask: Region {}
 
 			Rectangle {
@@ -92,12 +84,15 @@ Scope {
 						rightMargin: 15
 					}
 
-					IconImage {
- 					   implicitSize: 30
-
-					    source: Pipewire.defaultAudioSink.audio.muted
-					        ? Quickshell.iconPath("audio-volume-muted-symbolic")
-					        : Quickshell.iconPath("audio-volume-high-symbolic")
+					Text {
+						text: {
+							Pipewire.defaultAudioSink.audio.muted
+						        ? ""
+						        : ""
+						}
+						font.pixelSize: 30
+						anchors.verticalCenter: parent.verticalCenter
+						color: "white"
 					}
 
 					Rectangle {

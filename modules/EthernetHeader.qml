@@ -19,15 +19,15 @@ Rectangle {
     radius: 40
     color: "transparent"
 
-    Row {
+    Rectangle {
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.rightMargin: 10
-        spacing: 8
+        color: "transparent"
 
         Column {
             spacing: 20
-            anchors.verticalCenter: parent.verticalCenter
+            // anchors.verticalCenter: parent.verticalCenter
             width: parent.width*.90
             Text {
                 text: "Ethernet"
@@ -42,23 +42,12 @@ Rectangle {
             height: parent.height
             anchors.right: parent.right
             anchors.rightMargin: 10
-            spacing: 8
             Row {
                 spacing: 10
                 anchors.right: parent.right
                 anchors.left: parent.left
                 width: parent.width
                 height: parent.height
-
-
-                // RoundedSwitch{
-                //     id: wifiSwitch
-                //     anchors.verticalCenter: parent.verticalCenter
-                //     checked: S.NetworkMonitor.wifiEnabled
-                //     onToggled: {
-                //         S.NetworkMonitor.disableWifi(wifiSwitch.checked)
-                //     }
-                // }
 
 
                 Rectangle {

@@ -85,7 +85,7 @@ Scope {
           TailscaleNetwork {
             id:tailNet
             visible: S.NetworkMonitor.tailscaleConnected
-            popup: ethernetNetworkPanel
+            popup: tailscaleNetworkPanel
           },
           Bluetooth{
             id:bluet
@@ -112,6 +112,11 @@ Scope {
       EthernetNetworkPanel {
         id: ethernetNetworkPanel
         trigger: ethNet
+      }
+
+      TailscaleNetworkPanel {
+        id: tailscaleNetworkPanel
+        trigger: tailNet
       }
 
       AudioPanel {

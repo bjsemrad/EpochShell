@@ -22,21 +22,13 @@ Rectangle {
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             radius: 20
-            color: T.Config.bg0 
-            border.color: S.NetworkMonitor.wifiConnected ? T.Config.blue : T.Config.red
+            color: T.Config.bg0
+            border.color: S.Tailscale.connected ? T.Config.blue : T.Config.red
             border.width: 2 
             antialiasing: true
 
               Text {
-                text:  {
-                    const s = S.NetworkMonitor.strength
-
-                    if (!S.NetworkMonitor.wifiConnected) return "󰤭"
-                    if (s >= 75) return "󰤨"
-                    if (s >= 50) return "󰤢"
-                    if (s >= 25) return "󰤟"
-                    return "󰤟"
-                }
+                text:  "󰒄"
                 font.pixelSize: 18
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.centerIn: parent
@@ -50,14 +42,14 @@ Rectangle {
             spacing: 10
 
             Text {
-                text: S.NetworkMonitor.wifiConnected ? S.NetworkMonitor.ssid : "Disconnected"
+                text: S.Tailscale.connected ? S.Tailscale.magicDNSSuffix : "Disconnected"
                 color: "white"
                 font.pixelSize: 16
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 
             Text {
-                text: S.NetworkMonitor.wifiConnected ? S.NetworkMonitor.wifiConnectedIP : "Disconnected"
+                text: S.NetworkMonitor.tailscaleConnected ? S.NetworkMonitor.tailscaleConnectedIP : "Disconnected"
                 color: T.Config.fg
                 font.pixelSize: 14;
                 anchors.horizontalCenter: parent.horizontalCenter

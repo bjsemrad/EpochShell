@@ -20,7 +20,9 @@ Rectangle {
 
     Connections {
         target: wifiNetworkPanel
-        onVisibleChanged: if (!wifiNetworkPanel.visible) networksSection.expanded = false
+        function onVisibleChanged() {
+            if (!wifiNetworkPanel.visible) networksSection.expanded = false
+        }
     }
 
     Column {
@@ -102,10 +104,10 @@ Rectangle {
                     width: ListView.view.width*.9
                     implicitHeight: 30
                     color: "transparent"
-                    border.width: 2
+                    border.width: T.Config.selectedBorderWidth
                     radius: 6
                     anchors.margins: 10
-                    border.color: mouseArea.containsMouse ? T.Config.blue : "transparent"
+                    border.color: mouseArea.containsMouse ? T.Config.fg : "transparent"
 
                     Row {
                         anchors.fill: parent

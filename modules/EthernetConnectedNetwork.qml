@@ -43,21 +43,19 @@ Rectangle {
             width: parent.width
             spacing: 10
 
-        Text {
-            text: S.NetworkMonitor.ethernetConnected ? S.NetworkMonitor.ethernetDeviceName : "Disconnected"
-            color: "white"
-            font.pixelSize: 16
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
+            Text {
+                text: S.NetworkMonitor.ethernetConnected ? S.NetworkMonitor.ethernetDeviceName : "Disconnected"
+                color: "white"
+                font.pixelSize: 16
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
 
-        Text {
-            text: S.NetworkMonitor.ethernetConnected ? S.NetworkMonitor.ethernetConnectedIP : "Disconnected"
-            color: T.Config.fg
-            font.pixelSize: 14;
-                        anchors.horizontalCenter: parent.horizontalCenter
-            // anchors.verticalCenter: parent.verticalCenter
-            // anchors.centerIn: parent
-        }
+            Text {
+                text: S.NetworkMonitor.ethernetConnected ? S.NetworkMonitor.ethernetConnectedIP : "Disconnected"
+                color: T.Config.fg
+                font.pixelSize: 14;
+                            anchors.horizontalCenter: parent.horizontalCenter
+            }
         }
 
 }

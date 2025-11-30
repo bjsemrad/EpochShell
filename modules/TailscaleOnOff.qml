@@ -21,7 +21,6 @@ Rectangle {
 
     Rectangle {
         anchors.fill: parent
-        width: parent.width
         anchors.leftMargin: 10
         anchors.rightMargin: 10
         color: "transparent"
@@ -29,9 +28,9 @@ Rectangle {
         Column {
             spacing: 20
             anchors.verticalCenter: parent.verticalCenter
-            width: parent.width*.80
+            width: parent.width*.85
             Text {
-                text: "Wifi"
+                text: "Tailscale"
                 color: T.Config.fg
                 font.bold: true
                 font.pointSize: 13
@@ -39,7 +38,7 @@ Rectangle {
         }
 
         Column {
-            width: parent.width*.20
+            width: parent.width*.15
             height: parent.height
             anchors.right: parent.right
             anchors.rightMargin: 10
@@ -53,11 +52,11 @@ Rectangle {
 
 
                 RoundedSwitch{
-                    id: wifiSwitch
+                    id: tailscaleSwitch
                     anchors.verticalCenter: parent.verticalCenter
-                    checked: S.NetworkMonitor.wifiEnabled
+                    checked: S.Tailscale.connected
                     onToggled: {
-                        S.NetworkMonitor.disableWifi(wifiSwitch.checked)
+                        S.Tailscale.toggle(tailscaleSwitch.checked)
                     }
                 }
 
@@ -84,7 +83,7 @@ Rectangle {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            S.NetworkMonitor.editNetworks()
+                            S.Tailscale.trayscale()
                         }
 
                     }

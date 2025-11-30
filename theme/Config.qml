@@ -72,6 +72,11 @@ Singleton {
     property string fontFamily: "JetBrainsMono Nerd Font Propo"
 
 
-    property int controlCenterWidth: 550
-    property int networkPopupWidth: 300
+    property int networkPopupWidth: 400
+    property int tailscalePopupWidth: 550
+
+    property int tailscalePeersFontSize: 13 
+
+    property int selectedBorderWidth: 1
+
 }

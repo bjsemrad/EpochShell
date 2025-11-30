@@ -22,15 +22,17 @@ Item {
 
     property bool wifiConnected: false
     property bool wifiDevice: false
+    property string wifiConnectedIP: ""
     property bool ethernetConnected: false
     property bool ethernetDevice: false
     property string ethernetDeviceName: ""
     property string ethernetConnectedIP: ""
     property bool tailscaleConnected: false
+    property string tailscaleConnectedIP: ""
 
     Timer {
         id: refreshTimer
-        interval: 5000    // 4 seconds
+        interval: 5000
         running: true
         repeat: true
         onTriggered: refresh()
@@ -51,6 +53,12 @@ Item {
 
     function updateProperties() {
         wifiConnected = Object.values(networkConnections).some(c => c.active && c.type === "wifi")
+        let wifi = Object.entries(networkConnections).find(([device, conn]) => conn.active && conn.type === "wifi");
+        if(wifi) {
+            wifiConnectedIP = wifi[1].ipv4
+        }
+        tailscaleConnected = Object.values(networkConnections).some(c => c.active && c.type === "vpn" && c.name.indexOf("tailscale") >= 0)
+
         ethernetConnected = Object.values(networkConnections).some(c => c.active && c.type === "ethernet")
         let eth = Object.entries(networkConnections).find(([device, conn]) => conn.active && conn.type === "ethernet");
         if(eth) {
@@ -58,6 +66,11 @@ Item {
             ethernetConnectedIP = eth[1].ipv4
         }
         tailscaleConnected = Object.values(networkConnections).some(c => c.active && c.type === "vpn" && c.name.indexOf("tailscale") >= 0)
+        let tail = Object.entries(networkConnections).find(([device, conn]) => conn.active && conn.type === "vpn" && conn.name.indexOf("tailscale") >= 0);
+        if(tail) {
+            tailscaleConnectedIP = tail[1].ipv4
+        }
+
     }
 
     
