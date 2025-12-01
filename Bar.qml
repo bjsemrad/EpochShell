@@ -42,7 +42,11 @@ Scope {
           left: parent.left
         }
 
-        children: [Workspaces{}]
+        children: [
+          BarFill{},
+          ApplicationLauncher{},
+          Workspaces{}
+        ]
       }
 
        RowLayout {

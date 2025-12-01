@@ -37,6 +37,7 @@ Rectangle {
 
     Row {
         id: inner
+        height: parent.height
         spacing: 5 
         Text {
             text: root.iconText
