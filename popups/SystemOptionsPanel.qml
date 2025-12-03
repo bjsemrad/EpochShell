@@ -17,10 +17,11 @@ HoverPopupWindow {
         id: systemContent
         spacing: 10
         Column {
-            width: T.Config.audioPopupWidth
+            width: T.Config.systemPopupWidth
             spacing: 10
             SystemOptionsHeader{}
             ComponentSplitter{}
+            SystemActions{}
             ComponentSpacer{}
         }
     }

@@ -56,7 +56,7 @@ Singleton {
     //  SPECIAL
     // ───────────────────────────────────────────────
     //
-    property color osdBg:     "#B0000000"
+    property color osdBg:  bg
 
     //
     // ───────────────────────────────────────────────
@@ -77,6 +77,8 @@ Singleton {
     property int tailscalePopupWidth: 550
     property int bluetoothPopupWidth: 400
     property int audioPopupWidth: 300
+    property int systemPopupWidth: 300
+
 
     property int tailscalePeersFontSize: 13 
 

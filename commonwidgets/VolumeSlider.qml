@@ -78,13 +78,19 @@ Rectangle {
             from: 0; to: 100
             value: 25
 
+             MouseArea {
+                anchors.fill: parent
+                onPressed: (mouse) => mouse.accepted = false
+                cursorShape: volume.pressed ? Qt.ClosedHandCursor : Qt.PointingHandCursor
+            }
+
             onValueChanged: if (audioInterface) {
                 audioInterface.audio.volume = value / 100      // audio follows UI
             }
             background: Rectangle {
                 anchors.fill: parent
                 radius: height / 2
-                color: T.Config.grey
+                color: T.Config.bg0
             }
 
             handle: Rectangle {

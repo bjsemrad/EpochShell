@@ -14,26 +14,26 @@ Rectangle {
     required property bool mouseEnabled
     required property bool hoverEnabled
 
-    MouseArea {
-        id: mouseArea
-        enabled: mouseEnabled
-        anchors.fill: parent
-        hoverEnabled: hoverEnabled
-        cursorShape: mouseEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onClicked: {
-            if(!popup.visible) {
-                popup.visible = true //Don't set this to !popup.visible, on high-refresh get odd flickering
-            }
-        }
-
-        onEntered: {
-            popup.visible = mouseArea.containsMouse
-        }
-
-        onExited: {
-            popup.visible = !mouseArea.containMouse
-        }
-    }
+    // MouseArea {
+    //     id: mouseArea
+    //     enabled: mouseEnabled
+    //     anchors.fill: parent
+    //     hoverEnabled: hoverEnabled
+    //     cursorShape: mouseEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+    //     onClicked: {
+    //         if(!popup.visible) {
+    //             popup.visible = true //Don't set this to !popup.visible, on high-refresh get odd flickering
+    //         }
+    //     }
+    //
+    //     onEntered: {
+    //         popup.visible = mouseArea.containsMouse
+    //     }
+    //
+    //     onExited: {
+    //         popup.visible = !mouseArea.containMouse
+    //     }
+    // }
 
     Row {
         id: inner
@@ -44,6 +44,27 @@ Rectangle {
             font.pixelSize: 20
             anchors.verticalCenter: parent.verticalCenter
             color: T.Config.fg
+
+             MouseArea {
+                id: mouseArea
+                enabled: mouseEnabled
+                anchors.fill: parent
+                hoverEnabled: hoverEnabled
+                cursorShape: mouseEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                onClicked: {
+                    if(!popup.visible) {
+                        popup.visible = true //Don't set this to !popup.visible, on high-refresh get odd flickering
+                    }
+                }
+
+                onEntered: {
+                    popup.visible = mouseArea.containsMouse
+                }
+
+                onExited: {
+                    popup.visible = !mouseArea.containMouse
+                }
+            }
         }
     }
 }

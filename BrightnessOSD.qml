@@ -87,13 +87,13 @@ Scope {
             exclusiveZone: 0
 
             implicitWidth: 400
-            implicitHeight: 75
+            implicitHeight: 50
             color: "transparent"
             mask: Region { }
 
             Rectangle {
                 anchors.fill: parent
-                radius: 10
+                radius: 20
                 color: T.Config.osdBg
 
                 RowLayout {

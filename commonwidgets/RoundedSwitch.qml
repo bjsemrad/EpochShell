@@ -26,7 +26,7 @@ Item {
         radius: 10
         y: 2
         x: checked ? (root.width - width - 2) : 2
-        color: "white"
+        color: T.Config.bg0 //"white"
 
         Behavior on x {
             NumberAnimation {

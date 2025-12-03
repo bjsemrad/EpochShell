@@ -255,7 +255,7 @@ Item {
     function _parseWifiStatus(text) {
         let lines = text.trim().split("\n")
         if (lines.length === 0) {
-            wifiConnected = false
+            // wifiConnected = false
             ssid = ""
             strength = 0
             return
@@ -264,14 +264,14 @@ Item {
         // Find the active entry (ACTIVE=yes)
         let activeLine = lines.find(l => l.startsWith("yes:"))
         if (!activeLine) {
-            wifiConnected = false
+            // wifiConnected = false
             ssid = ""
             strength = 0
             return
         }
 
         let p = activeLine.split(":")
-        wifiConnected = (p[0] === "yes")
+        // wifiConnected = (p[0] === "yes")
         ssid = p[1] ?? ""
         strength = parseInt(p[2] ?? "0") || 0
     }
