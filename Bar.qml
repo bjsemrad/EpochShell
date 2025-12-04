@@ -101,6 +101,7 @@ Scope {
           },
           Battery{
             id: battery
+            popup: batteryPanel
           },
           Clipboard{},
           Colorpicker{},
@@ -130,6 +131,11 @@ Scope {
       AudioPanel {
         id: audioPanel
         trigger: vol
+      }
+
+      BatteryPanel {
+        id: batteryPanel
+        trigger: battery
       }
 
       BluetoothPanel {

@@ -30,10 +30,7 @@ Row {
 
             Rectangle {
                 anchors.fill: parent
-                // radius: height / 2
-                // border.width: 1
-                // border.color: "#555"
-                color: T.Config.bg //"#000000"//active ? "#FFFFFF" : "#000000"
+                color: T.Config.bg
 
                 Text {
                     anchors.centerIn: parent

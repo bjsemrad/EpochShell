@@ -25,7 +25,8 @@ Rectangle {
 
         Column {
             spacing: 20
-            width: parent.width*.75
+            width: parent.width*.55
+            anchors.verticalCenter: parent.verticalCenter
             Text {
                 text: "System"
                 color: T.Config.fg
@@ -35,7 +36,7 @@ Rectangle {
         }
 
         Column {
-            width: parent.width*.25
+            width: parent.width*.45
             height: parent.height
             anchors.right: parent.right
             anchors.rightMargin: 10

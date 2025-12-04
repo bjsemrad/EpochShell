@@ -3,6 +3,7 @@ singleton PopupManager 1.0 PopupManager.qml
 singleton Tailscale 1.0 Tailscale.qml
 singleton Bluetooth 1.0 BluetoothMonitor.qml
 singleton AudioService 1.0 AudioService.qml
+singleton BatteryService 1.0 BatteryService.qml
 
 
 

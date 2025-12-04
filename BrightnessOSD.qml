@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
 import Quickshell.Io
-import Quickshell.Hyprland
 import "./theme" as T
 Scope {
     id: root

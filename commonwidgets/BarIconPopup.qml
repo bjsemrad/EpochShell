@@ -14,27 +14,6 @@ Rectangle {
     required property bool mouseEnabled
     required property bool hoverEnabled
 
-    // MouseArea {
-    //     id: mouseArea
-    //     enabled: mouseEnabled
-    //     anchors.fill: parent
-    //     hoverEnabled: hoverEnabled
-    //     cursorShape: mouseEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-    //     onClicked: {
-    //         if(!popup.visible) {
-    //             popup.visible = true //Don't set this to !popup.visible, on high-refresh get odd flickering
-    //         }
-    //     }
-    //
-    //     onEntered: {
-    //         popup.visible = mouseArea.containsMouse
-    //     }
-    //
-    //     onExited: {
-    //         popup.visible = !mouseArea.containMouse
-    //     }
-    // }
-
     Row {
         id: inner
         height: parent.height
@@ -49,7 +28,7 @@ Rectangle {
                 id: mouseArea
                 enabled: mouseEnabled
                 anchors.fill: parent
-                hoverEnabled: hoverEnabled
+                hoverEnabled: root.hoverEnabled
                 cursorShape: mouseEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                 onClicked: {
                     if(!popup.visible) {
