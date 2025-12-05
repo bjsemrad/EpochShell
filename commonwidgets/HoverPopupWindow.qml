@@ -17,8 +17,9 @@ PopupWindow {
     property bool _popupHover: false
 
     function _updateHover() {
-        if (!_popupHover)
+        if (!_popupHover){
             root.visible = false
+        }
     }
 
     Window.onActiveChanged: {

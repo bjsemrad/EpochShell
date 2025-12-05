@@ -49,7 +49,7 @@ Rectangle {
 	}
 
     	Connections {
-            target: audioInterface?.audio
+            target: audioInterface ? audioInterface.audio : null
             function updateSlider() {
                 volume.value = audioInterface.audio.volume * 100
             }

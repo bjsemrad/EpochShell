@@ -20,13 +20,20 @@ Singleton {
     readonly property BluetoothAdapter adapter: Bluetooth.defaultAdapter
     readonly property bool enabled: (adapter && adapter.enabled) ?? false
     readonly property bool discovering: (adapter && adapter.discovering) ?? false
-    readonly property var devices:
-
-    function fetchDevices(){
-        if(!adapter || !adapter.devices){
+    readonly property var devices:  {
+        if (!adapter || !adapter.devices) {
             return []
         }
-        return sortDevices(adapter.devices.values.filter(dev => { return dev && !(dev.paired)}))
+        let paired = adapter.devices.values.filter(dev => {return dev && !dev.paired})
+        return sortDevices(paired)
+    }
+
+    function scanForDevices() {
+        adapter.discovering = true
+    }
+
+    function stopScan() {
+        adapter.discovering = false
     }
 
     readonly property bool connected: {
@@ -136,18 +143,12 @@ Singleton {
         return "bluetooth"
     }
 
-	//    	Timer {
-	// 	id: hideTimer
-	//                interval: 1000
-	//                running: true
-	//                repeat: true
-	//                onTriggered: {
-	//                    blue.connected.forEach(dev => {
-	//                        console.log(dev.name)
-	//                    })
-	//                }
-	// }
 
-
-
+    Process {
+        id: blueman
+        command: ["blueman-manager"]
+    }
+    function settings() {
+        blueman.running = true
+    }
 }

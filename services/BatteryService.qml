@@ -43,7 +43,7 @@ Singleton {
         textStr += time.minutes > 0 ? time.minutes + " m" : ""
         return textStr
     }
-    
+
     function secondsToHMS(seconds) {
        const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds % 3600) / 60);

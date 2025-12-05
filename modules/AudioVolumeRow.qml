@@ -19,7 +19,7 @@ Rectangle {
         width: parent.width
         spacing: 10
         Text {
-            text: "Audio "  + (Pipewire.defaultAudioSink ? " - " + Pipewire.defaultAudioSink?.nickname : "")
+            text: "Audio "  + (Pipewire.defaultAudioSink ? " - " + Pipewire.defaultAudioSink?.description : "")
             color: T.Config.fg
             font.bold: true
             font.pointSize: 11

@@ -17,20 +17,6 @@ Rectangle {
 
     implicitHeight: header.height + listContainer.height
 
-
-    property var audioNodes: {
-        const result = [];
-        const nodes = Pipewire.nodes.values;
-        for (let i = 0; i < nodes.length; ++i) {
-            const n = nodes[i]
-            if (isAudioType(n) && n.nickname) {
-                result.push(n);
-            }
-        }
-        result.sort((a, b) => a.nickname.toLowerCase().localeCompare(b.nickname.toLowerCase()));
-        return result;
-    }
-
     required property string type
     required property PwNode defaultAudioNode
 
@@ -80,13 +66,14 @@ Rectangle {
                 spacing: 10
 
                 Repeater {
-                    model: audioNodes
+                    model: Pipewire.nodes
 
                     delegate: Rectangle {
                         width: parent.width
                         implicitHeight: 30
                         radius: 6
                         anchors.margins: 10
+                        visible: isAudioType(modelData) && modelData.description
                         color: mouseArea.containsMouse ? T.Config.activeSelection : "transparent"
 
                         Row {
@@ -104,7 +91,7 @@ Rectangle {
                             }
 
                             Text {
-                                text: modelData.nickname
+                                text: modelData.description
                                 color: "white"
                                 font.pixelSize: 13
                                 elide: Text.ElideRight

@@ -75,7 +75,7 @@ Singleton {
     property int networkPopupWidth: 400
     property int tailscalePopupWidth: 550
     property int bluetoothPopupWidth: 400
-    property int audioPopupWidth: 320
+    property int audioPopupWidth: 400
     property int systemPopupWidth: 200
     property int batteryPopupWidth: 250
 

@@ -67,7 +67,11 @@ Rectangle {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        device.connect()
+                        if(device.state === BluetoothDeviceState.Connected){
+                            device.disconnect()
+                        }else{
+                            device.connect()
+                        }
                     }
                 }
         }

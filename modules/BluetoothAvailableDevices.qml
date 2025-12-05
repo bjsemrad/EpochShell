@@ -15,14 +15,15 @@ Rectangle {
     color: "transparent"
 
     property bool expanded: false
-    implicitHeight: header.height + listContainer.height
+    implicitHeight: header.height + listContainer.height + 10
 
 
     Connections {
         target:  bluetoothPanel
         function onVisibleChanged() {
-            if (! bluetoothPanel.visible) {
+            if (!bluetoothPanel.visible) {
                 bluetoothSection.expanded = false
+                S.Bluetooth.stopScan()
             }
         }
     }
@@ -30,7 +31,7 @@ Rectangle {
     Column {
         anchors.margins: 4
         anchors.fill: parent
-        spacing: 6
+        spacing: 15
         Rectangle {
             id: header
             implicitHeight: 20
@@ -41,37 +42,56 @@ Rectangle {
                 spacing: 10
                 Text {
                     id: avText
+                    anchors.verticalCenter: parent.verticalCenter
                     text: "Available Devices"
                     color: T.Config.fg
                     font.pixelSize: 13
                     Layout.leftMargin: 4
                 }
 
-                Text {
-                    text: expanded ? "▲" : "▼"
-                    color: "#aaaaaa"
-                    font.pixelSize: 12
-                }
+                Row {
+                   spacing: 10
 
-                Spinner {
-                    id: bluetoothSpinner
-                    running: S.Bluetooth.discovering
-                }
-            }
+                    Rectangle {
+                        width: 100
+                        height: 20
+                        radius: 10
+                        color: S.Bluetooth.discovering ? T.Config.green : T.Config.bg2
 
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
 
-                onClicked: function() {
-                    if(!bluetoothSection.expanded) {
-                        // S.Network.refreshAvailable()/
+                        Text {
+                            anchors.centerIn: parent
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: S.Bluetooth.discovering ? T.Config.black : T.Config.fg
+                            font.bold: true
+                            text: S.Bluetooth.discovering ? "Stop Scan" : "Start Scan"
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                             hoverEnabled: true
+                             cursorShape: Qt.PointingHandCursor
+
+                           onClicked: function() {
+                                if (!S.Bluetooth.adapter) return;
+                                if (!S.Bluetooth.discovering) {
+                                    S.Bluetooth.scanForDevices()
+                                    bluetoothSection.expanded = true
+
+                                } else {
+                                    S.Bluetooth.stopScan()
+                                }
+                            }
+                        }
                     }
-                    bluetoothSection.expanded = !bluetoothSection.expanded
 
+                    Spinner {
+                        id: bluetoothSpinner
+                        running: S.Bluetooth.discovering
+                    }
                 }
             }
+
         }
 
 
@@ -98,7 +118,7 @@ Rectangle {
                 id: bluetoothList
                 anchors.fill: parent
                 implicitHeight: Math.min(listContainer.implicitHeight,  100)
-                model: S.Network.accessPoints
+                model: S.Bluetooth.devices
                 interactive: true
 
                 delegate: Rectangle {
@@ -116,25 +136,17 @@ Rectangle {
 
 
                         Text {
-                            text:  {
-                                const s = modelData.strength
-
-                                if (s >= 75) return "󰤨"
-                                if (s >= 50) return "󰤢"
-                                if (s >= 25) return "󰤟"
-                                return "󰤟"
-                            }
+                            text: S.Bluetooth.getDeviceIcon(modelData)
                             font.pixelSize: 18
                             anchors.verticalCenter: parent.verticalCenter
                             color: T.Config.fg
                         }
- 
+
                         Text {
-                            text: modelData.ssid
+                            text: modelData.name
+                            anchors.verticalCenter: parent.verticalCenter
                             color: "white"
                             font.pixelSize: 13
-                            elide: Text.ElideRight
-                            anchors.verticalCenter: parent.verticalCenter
                         }
                     }
 
@@ -142,9 +154,11 @@ Rectangle {
                         id: mouseArea
                         anchors.fill: parent
                         hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
+                        enabled: !S.Bluetooth.discovering
+                        cursorShape: !S.Bluetooth.discovering ? Qt.PointingHandCursor : Qt.ArrowCursor
                         onClicked: {
-                           S.Network.connectTo(modelData.ssid) 
+                            modelData.trusted = true
+                            modelData.connect()
                         }
                     }
                 }

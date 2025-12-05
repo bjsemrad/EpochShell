@@ -44,7 +44,9 @@ Rectangle {
                 }
 
                 onExited: {
-                    popup.visible = !mouseArea.containMouse
+                    if(root.hoverEnabled){
+                        popup.visible = !mouseArea.containMouse
+                    }
                 }
             }
         }

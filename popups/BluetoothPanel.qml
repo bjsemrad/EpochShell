@@ -30,9 +30,8 @@ HoverPopupWindow {
         BluetoothOnOff {}
         ComponentSplitter{}
         BluetoothPairedDevices{}
-        // WifiConnectedNetwork{}
         ComponentSplitter{}
-        // WifiAvailableNetworks{}
+        BluetoothAvailableDevices{}
         ComponentSpacer{}
     }
 }

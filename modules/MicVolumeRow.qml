@@ -19,7 +19,7 @@ Rectangle {
         width: parent.width
         spacing: 10
         Text {
-            text: "Microphone" + (Pipewire.defaultAudioSource ? " - " + Pipewire.defaultAudioSource?.nickname : "")
+            text: "Microphone" + (Pipewire.defaultAudioSource ? " - " + Pipewire.defaultAudioSource?.description : "")
             color: T.Config.fg
             font.bold: true
             font.pointSize: 11

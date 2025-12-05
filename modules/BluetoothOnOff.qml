@@ -66,7 +66,7 @@ Rectangle {
                     id: bluetoothSettings
                     iconText: ""
                     function onClick(){
-                        //TODO: 
+                        S.Bluetooth.settings()
                     }
                 }
             }
