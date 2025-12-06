@@ -14,7 +14,7 @@ Item {
         id: track
         anchors.fill: parent
         radius: height / 2
-        color: checked ? T.Config.blue : "#3A3A3E" //TODO: Come back to this // "#4A93FF" : "#3A3A3E"
+        color: checked ? T.Config.blue : T.Config.bg3
         Behavior on color { ColorAnimation { duration: 160 } }
     }
 
@@ -26,7 +26,7 @@ Item {
         radius: 10
         y: 2
         x: checked ? (root.width - width - 2) : 2
-        color: T.Config.bg0 //"white"
+        color: T.Config.bg0
 
         Behavior on x {
             NumberAnimation {

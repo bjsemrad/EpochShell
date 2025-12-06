@@ -92,7 +92,7 @@ Rectangle {
 
                             Text {
                                 text: modelData.description
-                                color: "white"
+                                color: T.Config.fg
                                 font.pixelSize: 13
                                 elide: Text.ElideRight
                                 anchors.verticalCenter: parent.verticalCenter

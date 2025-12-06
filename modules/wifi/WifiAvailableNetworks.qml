@@ -129,7 +129,7 @@ Rectangle {
  
                         Text {
                             text: modelData.ssid
-                            color: "white"
+                            color: T.Config.fg
                             font.pixelSize: 13
                             elide: Text.ElideRight
                             anchors.verticalCenter: parent.verticalCenter

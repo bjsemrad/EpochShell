@@ -88,8 +88,6 @@ Rectangle {
                     delegate: Rectangle {
                         width: parent.width
                         implicitHeight: 30
-                        // color: "transparent"
-                        //border.width: T.Config.selectedBorderWidth
                         radius: 6
                         anchors.margins: 10
                         color: mouseArea.containsMouse ? T.Config.activeSelection : "transparent"
@@ -117,7 +115,7 @@ Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
                                 Text {
                                     text: modelData.hostName
-                                    color: "white"
+                                    color: T.Config.fg
                                     font.pixelSize: T.Config.tailscalePeersFontSize
                                     elide: Text.ElideRight
                                     anchors.verticalCenter: parent.verticalCenter
@@ -129,7 +127,7 @@ Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
                                 Text {
                                     text: modelData.dnsName
-                                    color: "white"
+                                    color: T.Config.fg
                                     font.pixelSize: T.Config.tailscalePeersFontSize
                                     elide: Text.ElideRight
                                     anchors.verticalCenter: parent.verticalCenter
@@ -141,7 +139,7 @@ Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
                                 Text {
                                     text: modelData.ip
-                                    color: "white"
+                                    color: T.Config.fg
                                     font.pixelSize: T.Config.tailscalePeersFontSize
                                     elide: Text.ElideRight
                                     anchors.verticalCenter: parent.verticalCenter

@@ -58,7 +58,7 @@ Rectangle {
                 Text {
                     id: dns
                     text: S.Tailscale.connected ? S.Tailscale.magicDNSSuffix : "Disconnected"
-                    color: "white"
+                    color: T.Config.fg
                     font.pixelSize: 16
                     anchors.horizontalCenter: parent.horizontalCenter
                 }

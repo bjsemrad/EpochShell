@@ -67,7 +67,7 @@ Rectangle {
             Text {
                 id: ssid
                 text: S.Network.wifiConnected ? S.Network.ssid : "Disconnected"
-                color: "white"
+                color: T.Config.fg
                 font.pixelSize: 16
                 anchors.horizontalCenter: parent.horizontalCenter
             }

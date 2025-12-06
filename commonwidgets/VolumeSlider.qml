@@ -27,7 +27,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             anchors.centerIn: parent
             text: iconText
-            color: "white"
+            color: T.Config.fg
             font.bold: true
             font.pointSize: 18
         }

@@ -10,9 +10,13 @@ Singleton {
   property color bg: "#000000"
   property color inactive:  "#758799"
   property color active:  fg
-  property color activeSelection: bgDark //"#2A2A2A"
+  property color activeSelection: Qt.rgba(Qt.color(fg).r,
+               Qt.color(fg).g,
+               Qt.color(fg).b,
+               0.25)
 
-   property color black:    "#0e1013"
+  property color black:    "#0e1013"
+  property color bg_d: "#181b20"
     property color bgDark:   "#1E2127"
     property color bg0:      "#1f2329"
     property color bg1:      "#282c34"

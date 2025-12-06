@@ -107,14 +107,14 @@ Scope {
                         text: ""
                         font.pixelSize: 30
                         anchors.verticalCenter: parent.verticalCenter
-                        color: "white"
+                        color: T.Config.fg
                     }
 
                     Rectangle {
                         Layout.fillWidth: true
                         implicitHeight: 10
                         radius: 20
-                        color: "#50ffffff"
+                        color: T.Config.bgDark
 
                         Rectangle {
                             anchors {
@@ -125,7 +125,7 @@ Scope {
 
                             implicitWidth: parent.width * root.brightness
                             radius: parent.radius
-                            color: "#ffffff"
+                            color: T.Config.fg
                         }
                     }
                 }

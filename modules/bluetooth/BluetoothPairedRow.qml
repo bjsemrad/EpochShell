@@ -52,7 +52,7 @@ Rectangle {
                     Text {
                         text: device.name
                         anchors.verticalCenter: parent.verticalCenter
-                        color: "white"
+                        color: T.Config.fg
                         font.pixelSize: 13
                     }
 

@@ -58,9 +58,8 @@ Rectangle {
                 Text {
                     id: device
                     text: S.Network.ethernetConnected ? S.Network.ethernetDeviceName : "Disconnected"
-                    color: "white"
+                    color: T.Config.fg
                     font.pixelSize: 16
-                    // anchors.horizontalCenter: parent.horizontalCenter
                 }
 
                 MouseArea {

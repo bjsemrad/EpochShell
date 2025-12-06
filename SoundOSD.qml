@@ -91,7 +91,7 @@ Scope {
 						        : ""
 						}
 						font.pixelSize: 30
-						color: "white"
+						color: T.Config.fg 
 					}
 
 					Rectangle {
@@ -100,9 +100,10 @@ Scope {
 
 						implicitHeight: 10
 						radius: 20
-						color: "#50ffffff"
+						color: T.Config.bgDark
 
 						Rectangle {
+							color: T.Config.fg
 							anchors {
 								left: parent.left
 								top: parent.top
