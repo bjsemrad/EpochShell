@@ -12,62 +12,52 @@ Rectangle {
     id: root
     Layout.fillWidth: true
     Layout.preferredHeight: 30
+    radius: 6
+    color: mouseArea.containsMouse ? T.Config.activeSelection : "transparent"
+
 
     property BluetoothDevice device
 
-    RowLayout {
-        spacing: 10
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: 10
-        anchors.right: parent.right
-        anchors.left: parent.left
-        width: parent.width
+    Rectangle {
+        width: row.implicitWidth
         height: parent.height
+        color: "transparent"
+        RowLayout {
+                id: row
+                spacing: 10
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width
 
-        Rectangle {
-            radius: 6
-            color: mouseArea.containsMouse ? T.Config.activeSelection : "transparent"
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            RowLayout {
-                    spacing: 10
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.leftMargin: 10
-                    anchors.right: parent.right
-                    anchors.left: parent.left
-                    width: parent.width
+                Text {
+                    text: S.Bluetooth.getDeviceIcon(device)
+                    font.pixelSize: 18
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.leftMargin: 10
+                    color: device.state === BluetoothDeviceState.Connected ? T.Config.green : T.Config.fg
+                }
 
+                Text {
+                    text: device.name
+                    Layout.alignment: Qt.AlignVCenter
+                    color: T.Config.fg
+                    font.pixelSize: 13
+                }
 
-                    Text {
-                        text: S.Bluetooth.getDeviceIcon(device)
-                        font.pixelSize: 18
-                        Layout.alignment: Qt.AlignVCenter
-                        color: device.state === BluetoothDeviceState.Connected ? T.Config.green : T.Config.fg
-                    }
-
-                    Text {
-                        text: device.name
-                        Layout.alignment: Qt.AlignVCenter
-                        color: T.Config.fg
-                        font.pixelSize: 13
-                    }
-
-                    Spinner {
-                        id: bluetoothSpinner
-                        running: device.state === BluetoothDeviceState.Connecting
-                    }
-            }
-            MouseArea {
-                id: mouseArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    if(device.state === BluetoothDeviceState.Connected){
-                        device.disconnect()
-                    }else{
-                        device.connect()
-                    }
+                Spinner {
+                    id: bluetoothSpinner
+                    running: device.state === BluetoothDeviceState.Connecting
+                }
+        }
+        MouseArea {
+            id: mouseArea
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                if(device.state === BluetoothDeviceState.Connected){
+                    device.disconnect()
+                }else{
+                    device.connect()
                 }
             }
         }

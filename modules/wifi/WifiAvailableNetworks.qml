@@ -95,15 +95,14 @@ Item {
                 interactive: true
 
                 delegate: Rectangle {
-                    width: ListView.view.width*.9
+                    width: ListView.view.width*.95
                     implicitHeight: 30
                     radius: 6
-                    anchors.margins: 10
                     color: mouseArea.containsMouse ? T.Config.activeSelection : "transparent"
 
                     RowLayout {
-                        anchors.fill: parent
-                        width: parent.width
+                        id: row
+                        anchors.verticalCenter: parent.verticalCenter
                         anchors.margins: 10
                         spacing: 8
 
@@ -119,6 +118,7 @@ Item {
                             }
                             font.pixelSize: 18
                             Layout.alignment: Qt.AlignVCenter
+                            Layout.leftMargin: 10
                             color: T.Config.fg
                         }
  

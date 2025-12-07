@@ -25,14 +25,12 @@ Item {
             text: "Paired Devices"
             color: T.Config.fg
             font.pixelSize: 13
-            Layout.leftMargin: 4
         }
 
         Repeater {
             model: S.Bluetooth.pairedDevices
 
             delegate: BluetoothPairedRow {
-                width: root.width
                 device: modelData
             }
         }

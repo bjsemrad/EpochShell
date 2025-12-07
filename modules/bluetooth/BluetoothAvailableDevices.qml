@@ -11,6 +11,7 @@ Item {
     id: bluetoothSection
     Layout.fillWidth: true
     Layout.preferredHeight: col.implicitHeight
+    Layout.bottomMargin: 10
 
     property bool expanded: false
 
@@ -28,63 +29,53 @@ Item {
         id: col
         anchors.fill: parent
         spacing: 15
-        Rectangle {
-            id: header
-            Layout.preferredHeight: 20
-            Layout.fillWidth: true
-            color: "transparent"
-            RowLayout {
-                width: parent.width
-                spacing: 10
+        RowLayout {
+            width: parent.width
+            spacing: 10
+            Text {
+                id: avText
+                Layout.alignment: Qt.AlignVCenter
+                text: "Available Devices"
+                color: T.Config.fg
+                font.pixelSize: 13
+                Layout.leftMargin: 4
+            }
+
+
+            Rectangle {
+                Layout.preferredWidth: 100
+                Layout.preferredHeight: 25
+                Layout.alignment: Qt.AlignLeft
+                radius: 10
+                color: S.Bluetooth.discovering ? T.Config.green : T.Config.bg2
                 Text {
-                    id: avText
-                    Layout.alignment: Qt.AlignVCenter
-                    text: "Available Devices"
-                    color: T.Config.fg
+                    anchors.centerIn: parent
+                    color: S.Bluetooth.discovering ? T.Config.black : T.Config.fg
                     font.pixelSize: 13
-                    Layout.leftMargin: 4
+                    text: S.Bluetooth.discovering ? "Stop Scan" : "Start Scan"
                 }
 
-                RowLayout {
-                   spacing: 10
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
 
-                   Rectangle {
-                        Layout.preferredWidth: 100
-                        Layout.preferredHeight: 25
-                        radius: 10
-                        color: S.Bluetooth.discovering ? T.Config.green : T.Config.bg2
-                        Text {
-                            anchors.centerIn: parent
-                            color: S.Bluetooth.discovering ? T.Config.black : T.Config.fg
-                            font.pixelSize: 13
-                            text: S.Bluetooth.discovering ? "Stop Scan" : "Start Scan"
+                    onClicked: function() {
+                        if (!S.Bluetooth.adapter) return;
+                        if (!S.Bluetooth.discovering) {
+                            S.Bluetooth.scanForDevices()
+                            bluetoothSection.expanded = true
+
+                        } else {
+                            S.Bluetooth.stopScan()
                         }
-
-                        MouseArea {
-
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-
-                            onClicked: function() {
-                                if (!S.Bluetooth.adapter) return;
-                                if (!S.Bluetooth.discovering) {
-                                    S.Bluetooth.scanForDevices()
-                                    bluetoothSection.expanded = true
-
-                                } else {
-                                    S.Bluetooth.stopScan()
-                                }
-                            }
-                        }
-                    }
-
-                    Spinner {
-                        id: bluetoothSpinner
-                        running: S.Bluetooth.discovering
                     }
                 }
+            }
+
+            Spinner {
+                id: bluetoothSpinner
+                running: S.Bluetooth.discovering
             }
         }
 
@@ -115,23 +106,23 @@ Item {
                 interactive: true
 
                 delegate: Rectangle {
-                    width: ListView.view.width*.9
+                    width: ListView.view.width * .95
                     implicitHeight: 30
                     radius: 6
-                    anchors.margins: 10
                     color: mouseArea.containsMouse ? T.Config.activeSelection : "transparent"
 
                     RowLayout {
-                        anchors.fill: parent
-                        width: parent.width
+                        id: row
+                        anchors.verticalCenter: parent.verticalCenter
                         anchors.margins: 10
-                        spacing: 8
+                        spacing: 10
 
 
                         Text {
                             text: S.Bluetooth.getDeviceIcon(modelData)
                             font.pixelSize: 18
                             Layout.alignment: Qt.AlignVCenter
+                            Layout.leftMargin: 10
                             color: T.Config.fg
                         }
 
