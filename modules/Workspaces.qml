@@ -5,10 +5,10 @@ import Quickshell.Widgets
 import Quickshell.Hyprland
 import qs.theme as T
 
-Row {
+RowLayout {
     id: workspaces
     spacing: 6
-    anchors.verticalCenter: parent.verticalCenter
+    Layout.alignment: Qt.AlignVCenter
 
     Repeater {
         model: Hyprland.workspaces.values
@@ -42,13 +42,4 @@ Row {
             }
         }
     }
-
-    Connections {
-        target: Hyprland.workspaces
-        function onValuesChanged() {
-            workspaces.forceLayout()
-        }
-    }
-
 }
-

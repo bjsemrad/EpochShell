@@ -34,7 +34,6 @@ Scope {
         right: true
       }
       color: T.Config.bg
-
       implicitHeight: 40
 
       RowLayout {

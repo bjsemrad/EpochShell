@@ -1,55 +1,51 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Widgets
+import qs.theme as T
 
 Rectangle {
     id: root
+    required property var connectedOverview
     property alias iconSource: icon.text
     property string title: ""
     property string subtitle: ""
     property bool accent: false
 
-    radius: 18
-    color: accent ? "#b388ff33" : "#151320"
-    border.width: accent ? 0 : 1
-    border.color: "#ffffff10"
+    radius: 10
+    color: connectedOverview.visible ? T.Config.accentLightShade : mouseAreaMain.containsMouse ? T.Config.activeSelection : T.Config.bgDark
+    border.width: connectedOverview.visible ? 1 : 0
+    border.color: overviewSelectedColor()
 
-    implicitWidth: 180
-    implicitHeight: 70
+    implicitWidth: 150
+    implicitHeight: 50
 
     // Simple click handler you can hook into
     signal clicked()
 
     MouseArea {
+        id: mouseAreaMain
         anchors.fill: parent
         hoverEnabled: true
         onClicked: root.clicked()
         cursorShape: Qt.PointingHandCursor
-        onEntered: root.color = accent ? "#b388ff55" : "#1b1926"
-        onExited:  root.color = accent ? "#b388ff33" : "#151320"
+    }
+    
+    function overviewSelectedColor(){
+        return connectedOverview.visible ? T.Config.accent : T.Config.fg
     }
 
     RowLayout {
-        anchors.fill: parent
+        // anchors.fill: parent
+        anchors.centerIn: parent
         anchors.margins: 14
         spacing: 12
 
-        Rectangle {
-            id: iconBg
-            width: 32
-            height: 32
-            radius: 999
-            color: accent ? "#b388ff" : "#ffffff1a"
-            Layout.alignment: Qt.AlignVCenter
-
             Text {
                 id: icon
-                anchors.centerIn: parent
-                width: 18
-                height: 18
-                color: "white"
+                // Layout.alignment: Qt.AlignVCenter
+                font.pixelSize: 24
+                color: overviewSelectedColor()
             }
-        }
 
         ColumnLayout {
             Layout.fillWidth: true
@@ -57,7 +53,7 @@ Rectangle {
 
             Text {
                 text: root.title
-                color: "white"
+                color: connectedOverview.visible ? T.Config.accent : T.Config.fg
                 font.pixelSize: 14
                 font.bold: true
                 elide: Text.ElideRight
@@ -65,7 +61,7 @@ Rectangle {
 
             Text {
                 text: root.subtitle
-                color: "#ffffffaa"
+                color: T.Config.fg
                 font.pixelSize: 11
                 elide: Text.ElideRight
             }

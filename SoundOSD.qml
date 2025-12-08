@@ -13,7 +13,7 @@ Scope {
 	}
 
 	Connections {
-		target: Pipewire.defaultAudioSink?.audio
+		target: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink?.audio : null
 
 		function onVolumeChanged() {
 			if (!root.initialized) {
