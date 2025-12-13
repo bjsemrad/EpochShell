@@ -12,7 +12,8 @@ Rectangle {
     color: T.Config.surfaceContainer
     bottomLeftRadius: T.Config.cornerRadius
     bottomRightRadius: T.Config.cornerRadius
-    implicitHeight: expanded ? fullHeight : 0
+    Layout.preferredHeight: expanded ? height : 0
+    height: expanded ? fullHeight : 0
     clip: true
     visible: false
 
@@ -20,7 +21,7 @@ Rectangle {
     property real fullHeight: col.implicitHeight + 10
     property bool expanded: false
 
-    Behavior on implicitHeight {
+    Behavior on height {
         NumberAnimation {
             duration: 300
             easing.type: Easing.InOutQuad

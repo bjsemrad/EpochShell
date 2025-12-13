@@ -1,6 +1,7 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import Quickshell.Widgets
 import Quickshell.Services.Greetd
 import Quickshell.Io
@@ -45,8 +46,7 @@ PanelWindow {
     }
 
     margins.right: open ? 0 : -implicitWidth
-    margins.top: T.Config.barHeight  //+ 10
-    // margins.bottom: 10
+    margins.top: T.Config.barHeight
 
     HoverHandler {
         onHoveredChanged: {
@@ -71,7 +71,6 @@ PanelWindow {
         }
         S.PopupManager.register(popup);
         hidePanel();
-        // visible = false;
     }
 
     onOpenChanged: {
@@ -132,10 +131,14 @@ PanelWindow {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.fill: parent
-        // radius: T.Config.cornerRadius
         color: T.Config.background
-        // border.width: 2
-        // border.color: T.Config.outline
+        //
+        // Flickable {
+        //     id: flick
+        //     anchors.fill: parent
+        //     contentWidth: width
+        //     contentHeight: col.implicitHeight
+        //     clip: true
 
         ColumnLayout {
             id: col
@@ -146,68 +149,15 @@ PanelWindow {
             spacing: 20
 
             // ── Header card ───────────────────────────
-            Rectangle {
-                id: header
-                Layout.fillWidth: true
-                height: 80
-                radius: T.Config.cornerRadius
-                color: T.Config.surfaceContainer
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: 14
-                    spacing: 12
-
-                    Rectangle {
-                        width: 40
-                        height: 40
-                        radius: 999
-                        color: "transparent"
-                        Layout.alignment: Qt.AlignVCenter
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: ""
-                            color: T.Config.accent
-                            font.pixelSize: 32
-                            font.bold: true
-                        }
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 2
-
-                        Text {
-                            text: username
-                            color: T.Config.surfaceText
-                            font.pixelSize: 16
-                            font.bold: true
-                            elide: Text.ElideRight
-                        }
-                        Text {
-                            text: Qt.formatDateTime(sysclk.date, "dddd, MMM d, yyyy")
-                            color: T.Config.surfaceText
-                            font.pixelSize: 11
-                            elide: Text.ElideRight
-                        }
-                    }
-
-                    O.SystemOptions {}
-                }
-            }
+            O.User {}
 
             O.UtilsSystemTray {
                 panelRef: popup
             }
 
-            O.Stats {
-                Layout.fillWidth: true
-                container: popup
-            }
-
             ColumnLayout {
                 id: tabwrapper
+                height: grid.implictHeight + cardContent.implicitHeight
                 spacing: 0
 
                 // ── Cards grid ────────────────────────────
@@ -271,6 +221,7 @@ PanelWindow {
                     }
                 }
                 Rectangle {
+                    id: cardContent
                     Layout.fillWidth: true
                     Layout.preferredHeight: cardStack.implicitHeight + 5
                     color: "transparent"
@@ -308,6 +259,21 @@ PanelWindow {
                 }
             }
             BarFill {}
+            O.Stats {
+                Layout.fillWidth: true
+                container: popup
+            }
         }
+        // ScrollBar.vertical: ScrollBar {
+        //     policy: ScrollBar.AsNeeded
+        //     opacity: flick.moving ? 1 : 0.0
+        //
+        //     contentItem: Rectangle {
+        //         implicitWidth: 6
+        //         radius: 3
+        //         color: T.Config.surfaceText
+        //     }
+        // }
+        // }
     }
 }

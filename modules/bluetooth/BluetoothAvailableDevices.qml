@@ -16,15 +16,10 @@ Item {
     property bool expanded: false
     property string bgColor: T.Config.background
 
-    // Connections {
-    //     target: bluetoothPanel
-    //     function onVisibleChanged() {
-    //         if (!bluetoothPanel.visible) {
-    //             bluetoothSection.expanded = false;
-    //             S.Bluetooth.stopScan();
-    //         }
-    //     }
-    // }
+    onVisibleChanged: {
+        bluetoothSection.expanded = false;
+        S.Bluetooth.stopScan();
+    }
 
     ColumnLayout {
         id: col
