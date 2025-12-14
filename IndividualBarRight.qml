@@ -10,6 +10,7 @@ import qs.modules.systemtray
 import qs.modules.tailscale
 import qs.modules.wifi
 import qs.popups
+import qs.theme as T
 
 RowLayout {
     spacing: 0
@@ -40,7 +41,7 @@ RowLayout {
     }
     SystemOptions {
         id: systemOptions
-        popup: systemPanel
+        popup: T.Config.popupControlCenter ? systemPanelPopup : systemPanel
     }
     BarFill {}
 
@@ -72,6 +73,10 @@ RowLayout {
     BluetoothPanel {
         id: bluetoothPanel
         trigger: bluet
+    }
+    ControlCenterPanelPopup {
+        id: systemPanelPopup
+        trigger: systemOptions
     }
     ControlCenterPanel {
         id: systemPanel

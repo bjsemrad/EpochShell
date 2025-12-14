@@ -20,8 +20,10 @@ Rectangle {
     default property alias content: col.data
     property real fullHeight: col.implicitHeight + 10
     property bool expanded: false
+    property bool animationEnabled: true
 
     Behavior on height {
+        enabled: animationEnabled
         NumberAnimation {
             duration: 300
             easing.type: Easing.InOutQuad
@@ -58,23 +60,23 @@ Rectangle {
     //         topMargin: 12
     //         bottomMargin: 12
     //     }
-        // clip: true
-        ColumnLayout {
-            id: col
-            // Layout.fillWidth: true
-            anchors.fill: parent
-            anchors {
-                leftMargin: 12
-                topMargin: 12
-                rightMargin: 12
-                bottomMargin: 12
-            }
-            clip: true
-            onImplicitHeightChanged: {
-                if (root.visible) {
-                    openCard();
-                }
+    // clip: true
+    ColumnLayout {
+        id: col
+        // Layout.fillWidth: true
+        anchors.fill: parent
+        anchors {
+            leftMargin: 12
+            topMargin: 12
+            rightMargin: 12
+            bottomMargin: 12
+        }
+        clip: true
+        onImplicitHeightChanged: {
+            if (root.visible) {
+                openCard();
             }
         }
+    }
     // }
 }

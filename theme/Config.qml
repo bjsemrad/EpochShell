@@ -56,4 +56,7 @@ Singleton {
 
     property int barHeight: 40
     property int cornerRadius: 18
+
+    property bool panelAnimationsEnabled: false
+    property bool popupControlCenter: true
 }

@@ -13,17 +13,15 @@ import qs.theme as T
 import qs.services as S
 import qs.modules.overview as O
 
-PanelWindow {
+HoverPopupWindow {
     id: popup
-    implicitWidth: 600
+    trigger: trigger
     color: "transparent"
-    focusable: false
-    aboveWindows: true
-    exclusionMode: ExclusionMode.Ignore
+    popupWidth: 600
+
     visible: true
 
     property var anim_CURVE_SMOOTH_SLIDE: [0.23, 1, 0.32, 1, 1, 1]
-    property var trigger
     property bool open: false
     property bool stopHide: false
     property string username
@@ -34,25 +32,13 @@ PanelWindow {
         for (let card of cards) {
             card.closeCard();
         }
-        if (!T.Config.panelAnimationsEnabled) {
-            visible = true;
-        }
+        visible = true;
     }
+
     function hidePanel() {
         open = false;
-        if (!T.Config.panelAnimationsEnabled) {
-            visible = false;
-        }
+        visible = false;
     }
-
-    anchors {
-        right: true
-        top: true
-        bottom: true
-    }
-
-    margins.right: !T.Config.panelAnimationsEnabled ? 0 : open ? 0 : -implicitWidth
-    margins.top: T.Config.barHeight
 
     HoverHandler {
         onHoveredChanged: {
@@ -61,14 +47,6 @@ PanelWindow {
                     hidePanel();
                 }
             }
-        }
-    }
-
-    Behavior on margins.right {
-        enabled: T.Config.panelAnimationsEnabled
-        NumberAnimation {
-            duration: 300
-            easing.type: Easing.InOutQuad
         }
     }
 
@@ -133,26 +111,32 @@ PanelWindow {
 
     ClippingRectangle {
         id: content
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.fill: parent
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        Layout.preferredHeight: flick.implicitHeight
         color: T.Config.background
-
         Flickable {
             id: flick
             anchors.fill: parent
+
             contentWidth: width
-            contentHeight: col.implicitHeight
+            contentHeight: col.height
+
+            implicitHeight: Math.min(contentHeight + 10, Screen.height - (Screen.height / 15))
+            implicitWidth: popupWidth + 10
+
             clip: true
 
             ColumnLayout {
                 id: col
+                width: flick.width
                 anchors {
-                    fill: parent
-                    margins: 16
+                    margins: 10
                 }
                 spacing: 20
+                layer.enabled: true
+                layer.smooth: true
+                // layer.mipmaps: true
 
                 // ── Header card ───────────────────────────
                 O.User {}
@@ -239,31 +223,31 @@ PanelWindow {
                             O.Wifi {
                                 id: overviewWifi
                                 visible: false
-                                animationEnabled: T.Config.panelAnimationsEnabled
+                                animationEnabled: false
                                 Component.onCompleted: registerCard(overviewWifi)
                             }
                             O.Bluetooth {
                                 id: overviewBluetooth
                                 visible: false
-                                animationEnabled: T.Config.panelAnimationsEnabled
+                                animationEnabled: false
                                 Component.onCompleted: registerCard(overviewBluetooth)
                             }
                             O.Sound {
                                 id: overviewSound
                                 visible: false
-                                animationEnabled: T.Config.panelAnimationsEnabled
+                                animationEnabled: false
                                 Component.onCompleted: registerCard(overviewSound)
                             }
                             O.Tailscale {
                                 id: overviewTailscale
                                 visible: false
-                                animationEnabled: T.Config.panelAnimationsEnabled
+                                animationEnabled: false
                                 Component.onCompleted: registerCard(overviewTailscale)
                             }
                             O.Ethernet {
                                 id: overviewEthernet
                                 visible: false
-                                animationEnabled: T.Config.panelAnimationsEnabled
+                                animationEnabled: false
                                 Component.onCompleted: registerCard(overviewEthernet)
                             }
                         }
@@ -280,7 +264,7 @@ PanelWindow {
                 opacity: flick.moving ? 1 : 0.0
 
                 contentItem: Rectangle {
-                    implicitWidth: 6
+                    implicitWidth: 3
                     radius: 3
                     color: T.Config.surfaceText
                 }

@@ -12,6 +12,7 @@ import qs.modules.wifi
 import qs.modules.overview
 import qs.modules.controlcenter
 import qs.popups
+import qs.theme as T
 
 RowLayout {
     spacing: 10
@@ -21,13 +22,17 @@ RowLayout {
     }
     ControlCenter {
         id: controlCenter
-        popup: systemPanel
+        popup: T.Config.popupControlCenter ? systemPanelPopup : systemPanel
     }
     BarFill {}
 
     BatteryPanel {
         id: batteryPanel
         trigger: groupedBattery
+    }
+    ControlCenterPanelPopup {
+        id: systemPanelPopup
+        trigger: controlCenter
     }
     ControlCenterPanel {
         id: systemPanel

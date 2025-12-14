@@ -48,6 +48,7 @@ Scope {
                 children: [
                     BarFill {},
                     ApplicationLauncher {},
+                    NiriWorkspaces {},
                     Workspaces {}
                 ]
             }

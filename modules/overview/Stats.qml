@@ -56,34 +56,34 @@ Rectangle {
         }
     }
 
-    Timer {
-        id: pollTimer
-        interval: 1000
-        running: container.open
-        repeat: true
-        onTriggered: statsProc.running = true
-    }
-
-    Process {
-        id: statsProc
-        command: ["/home/brian/projects/epoch-shell/stats.py"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    var obj = JSON.parse(text);
-                    cpu = obj.cpu;
-                    mem = obj.mem;
-                    disk = obj.disk;
-
-                    var norm = Math.round(Math.max(1.0, obj.net_mbps));
-                    net_mbps = norm;
-                } catch (e) {
-                    console.log("stats parse error:", e, text);
-                }
-            }
-        }
-    }
-
-    Component.onCompleted: statsProc.running = true
+    // Timer {
+    //     id: pollTimer
+    //     interval: 1000
+    //     running: container.open
+    //     repeat: true
+    //     onTriggered: statsProc.running = true
+    // }
+    //
+    // Process {
+    //     id: statsProc
+    //     command: ["/home/brian/projects/epoch-shell/stats.py"]
+    //     running: true
+    //     stdout: StdioCollector {
+    //         onStreamFinished: {
+    //             try {
+    //                 var obj = JSON.parse(text);
+    //                 cpu = obj.cpu;
+    //                 mem = obj.mem;
+    //                 disk = obj.disk;
+    //
+    //                 var norm = Math.round(Math.max(1.0, obj.net_mbps));
+    //                 net_mbps = norm;
+    //             } catch (e) {
+    //                 console.log("stats parse error:", e, text);
+    //             }
+    //         }
+    //     }
+    // }
+    //
+    // Component.onCompleted: statsProc.running = true
 }

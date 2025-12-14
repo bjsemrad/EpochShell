@@ -45,7 +45,7 @@ PopupWindow {
         edges: Edges.Left | Edges.Bottom
         gravity: Edges.Bottom | Edges.Middle
         adjustment: PopupAdjustment.Slide | PopupAdjustment.Flip
-        rect.y: trigger.mapToGlobal(0, 0).y + trigger.height + 20
+        rect.y: trigger.mapToGlobal(0, 0).y + trigger.height + 5
     }
 
     Item {
