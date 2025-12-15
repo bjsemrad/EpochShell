@@ -115,6 +115,9 @@ HoverPopupWindow {
         id: content
         Layout.fillWidth: true
         Layout.fillHeight: true
+        Layout.topMargin: 10
+        Layout.bottomMargin: 10
+
         Layout.preferredHeight: flick.implicitHeight
         color: T.Config.background
         Flickable {

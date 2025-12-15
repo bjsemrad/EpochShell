@@ -34,8 +34,8 @@ Rectangle {
                 Layout.preferredHeight: innerRow.implicitHeight + padding / 2
                 visible: modelData.isActive || modelData.isOccupied
                 radius: 10
-                border.width: 1
-                border.color: active ? T.Config.accent : "transparent"
+                // border.width: 1
+                // border.color: active ? T.Config.accentLightShade : "transparent"
 
                 WrapperMouseArea {
                     id: mwrap
