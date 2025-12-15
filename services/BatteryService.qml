@@ -10,7 +10,14 @@ Singleton {
     property real percentage: 0
     property bool charging: false
 
-    property bool hasBattery: false
+    property bool hasBattery: {
+        for (let dev of UPower.devices.values) {
+            if (dev.isPresent && dev.isLaptopBattery) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     function batteryIcon() {
         let pct = Math.round(batteryService.percentage);
@@ -59,12 +66,6 @@ Singleton {
         if (UPower.displayDevice) {
             percentage = computePercentage(UPower.displayDevice.percentage);
             charging = (UPower.displayDevice.state === UPowerDeviceState.Charging);
-            for (let dev of UPower.devices.values) {
-                if (dev.isPresent && dev.isLaptopBattery) {
-                    console.log("Power " + JSON.stringify(dev));
-                    hasBattery = true;
-                }
-            }
         }
     }
 
