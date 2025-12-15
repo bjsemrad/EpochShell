@@ -156,13 +156,13 @@ Singleton {
             onRead: data => {
                 try {
                     const event = JSON.parse(data.trim());
-
                     if (event.WorkspacesChanged) {
                         recollectWorkspaces(event.WorkspacesChanged.workspaces);
                     } else if (event.WindowOpenedOrChanged) {
                         handleWindowOpenedOrChanged(event.WindowOpenedOrChanged);
                     } else if (event.WindowClosed) {
                         handleWindowClosed(event.WindowClosed);
+                        updateWindows(); //This is needed because the focus aspect wasn't properly updated
                     } else if (event.WindowsChanged) {
                         handleWindowsChanged(event.WindowsChanged);
                     } else if (event.WorkspaceActivated) {
@@ -367,5 +367,15 @@ Singleton {
         } catch (e) {
             console.error("NiriService", "Failed to logout:", e);
         }
+    }
+
+    function getWindowsForWorkspace(wsId) {
+        let currentWindowsOnWorkspace = [];
+        for (const win of windows) {
+            if (win.workspaceId === wsId) {
+                currentWindowsOnWorkspace.push(win);
+            }
+        }
+        return currentWindowsOnWorkspace;
     }
 }

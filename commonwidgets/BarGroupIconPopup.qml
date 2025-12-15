@@ -13,8 +13,8 @@ Rectangle {
     required property bool hoverEnabled
     property int padding: 10
 
-    color: popup.open ? T.Config.activeSelection : mouseArea.containsMouse ? T.Config.activeSelection : "transparent"
-    radius: 20
+    color: popup.open ? T.Config.surfaceContainer : mouseArea.containsMouse ? T.Config.surfaceContainer : "transparent"
+    radius: 10
     Layout.alignment: Qt.AlignVCenter
     implicitHeight: inner.implicitHeight + padding
     implicitWidth: inner.implicitWidth + padding * 2

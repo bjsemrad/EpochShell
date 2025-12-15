@@ -59,4 +59,6 @@ Singleton {
 
     property bool panelAnimationsEnabled: false
     property bool popupControlCenter: true
+
+    property bool hideInactiveWorkspaces: true
 }

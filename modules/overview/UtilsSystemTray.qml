@@ -112,6 +112,7 @@ Rectangle {
                         }
 
                         if (mouse.button === Qt.RightButton && !delegateRoot.trayItem.onlyMenu) {
+                            panelRef.stopHide = true;
                             menu.open();
                             return;
                         }

@@ -48,12 +48,7 @@ Scope {
                 children: [
                     BarFill {},
                     ApplicationLauncher {},
-                    NiriWorkspaces {
-                        visible: S.CompositorService.isNiri
-                    },
-                    HyprlandWorkspaces {
-                        visible: S.CompositorService.isHyprland
-                    }
+                    BarFill {}
                 ]
             }
 
@@ -64,13 +59,19 @@ Scope {
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
+                    centerIn: parent
                 }
                 readonly property int available: parent.width
 
                 implicitWidth: available
                 children: [
                     BarFill {},
-                    Clock {},
+                    NiriWorkspaces {
+                        visible: S.CompositorService.isNiri
+                    },
+                    HyprlandWorkspaces {
+                        visible: S.CompositorService.isHyprland
+                    },
                     BarFill {}
                 ]
             }

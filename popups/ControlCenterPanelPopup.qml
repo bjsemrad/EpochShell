@@ -36,8 +36,10 @@ HoverPopupWindow {
     }
 
     function hidePanel() {
-        open = false;
-        visible = false;
+        if (!stopHide) {
+            open = false;
+            visible = false;
+        }
     }
 
     HoverHandler {

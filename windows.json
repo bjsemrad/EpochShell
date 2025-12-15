@@ -1,0 +1,84 @@
+{
+	"id": 15,
+	"title": "Code search results - Brave",
+	"appId": "brave-browser",
+	"workspaceId": 1,
+	"isFocused": false,
+	"output": "eDP-1",
+	"position": {
+		"x": 1,
+		"y": 1
+	}
+},
+{
+	"id": 2,
+	"title": "qs -c ~/projects/EpochShell",
+	"appId": "com.mitchellh.ghostty",
+	"workspaceId": 4,
+	"isFocused": false,
+	"output": "eDP-1",
+	"position": {
+		"x": 1,
+		"y": 1
+	}
+},
+{
+	"id": 17,
+	"title": "nvim .",
+	"appId": "com.mitchellh.ghostty",
+	"workspaceId": 4,
+	"isFocused": true,
+	"output": "eDP-1",
+	"position": {
+		"x": 2,
+		"y": 1
+	}
+},
+{
+	"id": 4,
+	"title": "~/projects/EpochShell",
+	"appId": "com.mitchellh.ghostty",
+	"workspaceId": 4,
+	"isFocused": false,
+	"output": "eDP-1",
+	"position": {
+		"x": 3,
+		"y": 1
+	}
+},
+{
+	"id": 16,
+	"title": "nvim .",
+	"appId": "com.mitchellh.ghostty",
+	"workspaceId": 4,
+	"isFocused": false,
+	"output": "eDP-1",
+	"position": {
+		"x": 4,
+		"y": 1
+	}
+},
+{
+	"id": 9,
+	"title": "ChatGPT",
+	"appId": "brave-chatgpt.com__-Default",
+	"workspaceId": 9,
+	"isFocused": false,
+	"output": "eDP-1",
+	"position": {
+		"x": 1,
+		"y": 1
+	}
+},
+{
+	"id": 10,
+	"title": "ChatGPT",
+	"appId": "brave-chatgpt.com__-Default",
+	"workspaceId": 9,
+	"isFocused": false,
+	"output": "eDP-1",
+	"position": {
+		"x": 2,
+		"y": 1
+	}
+}

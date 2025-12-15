@@ -82,4 +82,5 @@ RowLayout {
         id: systemPanel
         trigger: systemOptions
     }
+    Clock {}
 }

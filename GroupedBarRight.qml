@@ -38,4 +38,5 @@ RowLayout {
         id: systemPanel
         trigger: controlCenter
     }
+    Clock {}
 }

@@ -109,6 +109,7 @@ Item {
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     cursorShape: Qt.PointingHandCursor
                     onClicked: mouse => {
+                        console.log("HERE");
                         if (mouse.button === Qt.LeftButton && !delegateRoot.trayItem.onlyMenu) {
                             delegateRoot.trayItem.activate();
                             return;
