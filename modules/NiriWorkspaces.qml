@@ -72,9 +72,6 @@ Rectangle {
                         id: innerRow
                         anchors.fill: parent
                         spacing: 5
-                        property int themeRev: 0
-
-                        Component.onCompleted: themeRev++
 
                         Text {
                             id: ws

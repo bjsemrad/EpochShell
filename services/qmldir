@@ -7,4 +7,3 @@ singleton BatteryService 1.0 BatteryService.qml
 singleton SystemTray 1.0 SystemTray.qml
 singleton NiriService 1.0 NiriService.qml
 singleton CompositorService 1.0 CompositorService.qml
-
