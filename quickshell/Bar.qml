@@ -48,7 +48,7 @@ Scope {
                 children: [
                     BarFill {},
                     ApplicationLauncher {},
-                    HyprlandActiveTitle {},
+                    // HyprlandActiveTitle {},
                     BarFill {}
                 ]
             }
