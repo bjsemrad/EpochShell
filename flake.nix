@@ -90,7 +90,7 @@
           home.packages = [ qsPkg epochRun ];
 
           # Install repo config into ~/.config/${cfg.configDir}
-          xdg.configFile."${cfg.configDir}".source = "${self}/config";
+          xdg.configFile."${cfg.configDir}".source = "${self}/quickshell";
 
           # Autostart uses the HM wrapper so -c is guaranteed
           systemd.user.services.epochshell = lib.mkIf cfg.autostart {
