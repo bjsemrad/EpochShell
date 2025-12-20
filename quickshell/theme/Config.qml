@@ -56,6 +56,8 @@ Singleton {
     property int connectedIconSize: 40
 
     property int fontSizeNormal: 14
+    property int fontSizeMedium: 16
+
     property int fontSizeLarge: 18
     property int fontSizeXLarge: 24
     property int fontSizeSubtext: 11
