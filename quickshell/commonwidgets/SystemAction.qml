@@ -8,8 +8,8 @@ import qs.theme as T
 Rectangle {
     id: contents
     Layout.fillWidth: true
-    Layout.preferredHeight: 40
-    radius: 10
+    Layout.preferredHeight: T.Config.systemActionSize
+    radius: T.Config.systemActionRadius
     color: "transparent"
     required property string icon
     required property string description
@@ -19,16 +19,16 @@ Rectangle {
 
     Rectangle {
         id: actionArea
-        implicitHeight: 40
+        implicitHeight: T.Config.systemActionSize
         width: parent.width
-        radius: 10
+        radius: T.Config.systemActionRadius
         color: actionMouseArea.containsMouse ? T.Config.activeSelection : "transparent"
 
         RowLayout {
-            anchors.leftMargin: 30
+            anchors.leftMargin: T.Config.systemActionMargin
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 10
+            spacing: T.Config.systemActionSpacing
 
             Text {
                 id: actionIcon

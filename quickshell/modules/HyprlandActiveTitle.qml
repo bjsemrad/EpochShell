@@ -7,8 +7,8 @@ import qs.theme as T
 Rectangle {
     id: root
     color: "transparent"
-    implicitWidth: inner.implicitWidth + 20
-    implicitHeight: inner.implicitHeight + 5
+    implicitWidth: inner.implicitWidth + T.Config.widthPaddingLarge
+    implicitHeight: inner.implicitHeight + T.Config.heightPaddingSmall
     Row {
         id: inner
         anchors.centerIn: parent
@@ -16,7 +16,7 @@ Rectangle {
         spacing: 5
         Text {
             text: Hyprland.activeToplevel?.wayland?.title ?? ""
-            font.pixelSize: 14
+            font.pixelSize: T.Config.fontSizeNormal
             anchors.verticalCenter: parent.verticalCenter
             color: T.Config.surfaceText
         }

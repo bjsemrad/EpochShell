@@ -18,7 +18,7 @@ Rectangle {
         text: Qt.formatDateTime(sysclk.date, "ddd hh:mm AP")
         color: T.Config.surfaceText
         font {
-            pointSize: 12
+            pointSize: T.Config.fontSizeSubtext
             family: T.Config.fontFamily
         }
         anchors {

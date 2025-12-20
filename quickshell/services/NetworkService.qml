@@ -208,13 +208,8 @@ Singleton {
         }
     }
 
-    // grab saved connections once at startup
-    // you can re-run this on a timer if you want it to refresh
     Process {
         id: savedNetworks
-        // running: true
-        // -t: terse, -f: fields we care about
-        // we only keep entries where TYPE == wifi
         command: ["sh", "-c", "nmcli -t -f NAME,TYPE connection show"]
 
         stdout: SplitParser {
@@ -276,23 +271,20 @@ Singleton {
     function _parseWifiStatus(text) {
         let lines = text.trim().split("\n");
         if (lines.length === 0) {
-            // wifiConnected = false
+            //  = false
             ssid = "";
             strength = 0;
             return;
         }
 
-        // Find the active entry (ACTIVE=yes)
         let activeLine = lines.find(l => l.startsWith("yes:"));
         if (!activeLine) {
-            // wifiConnected = false
             ssid = "";
             strength = 0;
             return;
         }
 
         let p = activeLine.split(":");
-        // wifiConnected = (p[0] === "yes")
         ssid = p[1] ?? "";
         strength = parseInt(p[2] ?? "0") || 0;
     }

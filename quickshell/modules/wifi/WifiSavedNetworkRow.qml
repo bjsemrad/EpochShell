@@ -29,7 +29,7 @@ Rectangle {
 
             Text {
                 text: "󰤨"
-                font.pixelSize: 18
+                font.pixelSize: T.Config.fontSizeLarge
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: 10
                 color: T.Config.surfaceText
@@ -39,7 +39,7 @@ Rectangle {
                 text: root.ssid
                 Layout.alignment: Qt.AlignVCenter
                 color: T.Config.surfaceText
-                font.pixelSize: 13
+                font.pixelSize: T.Config.fontSizeNormal
             }
 
             Spinner {

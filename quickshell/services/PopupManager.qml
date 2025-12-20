@@ -23,7 +23,6 @@ Singleton {
         for (let p of openPopups) {
             if (p.open) {
                 p.hidePanel();
-                // p.visible = false
             }
         }
     }

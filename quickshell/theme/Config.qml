@@ -81,8 +81,6 @@ Singleton {
 
     property int statMargin: 12
 
-    property bool showIndividualIcons: false
-
     property int barHeight: 40
     property int cornerRadius: 18
 
@@ -96,6 +94,17 @@ Singleton {
     property int settingsHeaderHeight: 30
     property int settingsHeaderSpacing: 10
 
+    property int systemActionSize: 40
+    property int systemActionRadius: 10
+    property int systemActionMargin: 30
+    property int systemActionSpacing: 10
+
+    property int volumeSliderSize: 40
+    property int volumeSliderRadius: 20
+    property int volumeSliderMargin: 30
+    property int volumeSliderSpacing: 10
+
+    property bool showIndividualIcons: false
     property bool panelAnimationsEnabled: false
     property bool popupControlCenter: true
 

@@ -35,7 +35,6 @@ Singleton {
         console.log("NiriService: Service started");
     }
 
-    // command from https://yalter.github.io/niri/niri_ipc/enum.Request.html
     function sendSocketCommand(sock, command) {
         sock.write(JSON.stringify(command) + "\n");
         sock.flush();

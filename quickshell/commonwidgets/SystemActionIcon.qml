@@ -7,9 +7,9 @@ import qs.theme as T
 
 Rectangle {
     id: actionArea
-    implicitHeight: 40
-    implicitWidth: 40
-    radius: 10
+    implicitHeight: T.Config.systemActionSize
+    implicitWidth: T.Config.systemActionSize
+    radius: T.Config.systemActionRadius
     color: actionMouseArea.containsMouse ? T.Config.activeSelection : "transparent"
 
     required property string icon
@@ -20,12 +20,12 @@ Rectangle {
 
     RowLayout {
         anchors.centerIn: parent
-        spacing: 10
+        spacing: T.Config.systemActionSpacing
 
         Text {
             id: actionIcon
             text: icon
-            font.pixelSize: 18
+            font.pixelSize: T.Config.fontSizeLarge
             Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
             color: T.Config.surfaceText
         }

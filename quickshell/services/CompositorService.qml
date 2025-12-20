@@ -48,7 +48,6 @@ Singleton {
             }
         }
 
-        //Lookup by basic information
         if (!entry) {
             for (let i = 0; i < DesktopEntries.applications.values.length; i++) {
                 const e = DesktopEntries.applications.values[i];

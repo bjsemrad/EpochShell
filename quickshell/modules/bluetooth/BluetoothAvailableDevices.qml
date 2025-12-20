@@ -33,7 +33,7 @@ Item {
                 Layout.alignment: Qt.AlignVCenter
                 text: "Available Devices"
                 color: T.Config.surfaceText
-                font.pixelSize: 13
+                font.pixelSize: T.Config.fontSizeNormal
                 Layout.leftMargin: 4
             }
 
@@ -46,7 +46,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     color: S.Bluetooth.discovering ? T.Config.surface : T.Config.surfaceText
-                    font.pixelSize: 13
+                    font.pixelSize: T.Config.fontSizeNormal
                     text: S.Bluetooth.discovering ? "Stop Scan" : "Start Scan"
                 }
 
@@ -112,7 +112,7 @@ Item {
 
                         Text {
                             text: S.Bluetooth.getDeviceIcon(modelData)
-                            font.pixelSize: 18
+                            font.pixelSize: T.Config.fontSizeLarge
                             Layout.alignment: Qt.AlignVCenter
                             Layout.leftMargin: 10
                             color: T.Config.surfaceText
@@ -122,7 +122,7 @@ Item {
                             text: modelData.name
                             Layout.alignment: Qt.AlignVCenter
                             color: T.Config.surfaceText
-                            font.pixelSize: 13
+                            font.pixelSize: T.Config.fontSizeNormal
                         }
                     }
 

@@ -21,7 +21,7 @@ Item {
             text: "Microphone" + (Pipewire.defaultAudioSource ? " - " + Pipewire.defaultAudioSource?.description : "")
             color: T.Config.surfaceText
             font.bold: true
-            font.pointSize: 11
+            font.pointSize: T.Config.fontSizeSubtext
             Layout.alignment: Qt.AlignLeft
             Layout.fillWidth: true
             elide: Text.ElideRight

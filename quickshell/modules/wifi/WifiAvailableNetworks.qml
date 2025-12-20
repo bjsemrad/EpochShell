@@ -42,14 +42,14 @@ Item {
                     id: avText
                     text: "Available Networks"
                     color: T.Config.surfaceText
-                    font.pixelSize: 13
+                    font.pixelSize: T.Config.fontSizeNormal
                     Layout.leftMargin: 4
                 }
 
                 Text {
                     text: expanded ? "" : "▼"
                     color: T.Config.surfaceText
-                    font.pixelSize: 12
+                    font.pixelSize: T.Config.fontSizeSubtext
                 }
 
                 Spinner {

@@ -76,7 +76,7 @@ Item {
                             spacing: 8
                             Text {
                                 text: ""
-                                font.pixelSize: 18
+                                font.pixelSize: T.Config.fontSizeLarge
                                 Layout.alignment: Qt.AlignVCenter
                                 color: modelData.id === defaultAudioNode?.id ? T.Config.accent : T.Config.surfaceText
                             }
@@ -84,7 +84,7 @@ Item {
                             Text {
                                 text: modelData.description
                                 color: T.Config.surfaceText
-                                font.pixelSize: 13
+                                font.pixelSize: T.Config.fontSizeNormal
                                 Layout.fillWidth: true
                                 clip: true
                                 elide: Text.ElideRight

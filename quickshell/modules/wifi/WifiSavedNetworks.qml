@@ -24,7 +24,7 @@ Item {
         Text {
             text: "Saved Networks"
             color: T.Config.surfaceText
-            font.pixelSize: 13
+            font.pixelSize: T.Config.fontSizeNormal
         }
 
         Repeater {

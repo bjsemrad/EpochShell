@@ -10,15 +10,15 @@ RowLayout {
     required property var audioInterface
     required property var iconText
     Layout.fillWidth: true
-    Layout.preferredHeight: 30
-    spacing: 10
+    Layout.preferredHeight: T.Config.volumeSliderMargin
+    spacing: T.Config.volumeSliderSpacing
     antialiasing: true
 
     Rectangle {
         id: audioMuteUnmute
-        Layout.preferredWidth: 40
-        Layout.preferredHeight: 40
-        radius: 20
+        Layout.preferredWidth: T.Config.volumeSliderSize
+        Layout.preferredHeight: T.Config.volumeSliderSize
+        radius: T.Config.volumeSliderRadius
         border.width: 2
         border.color: audioMouseArea.containsMouse ? T.Config.surfaceText : "transparent"
         color: audioMouseArea.containsMouse ? T.Config.activeSelection : "transparent"
