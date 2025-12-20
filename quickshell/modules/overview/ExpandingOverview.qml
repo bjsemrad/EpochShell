@@ -18,7 +18,7 @@ Rectangle {
     visible: false
 
     default property alias content: col.data
-    property real fullHeight: col.implicitHeight + 10
+    property real fullHeight: col.implicitHeight + 20
     property bool expanded: false
     property bool animationEnabled: true
 
@@ -51,19 +51,8 @@ Rectangle {
         }
     }
 
-    // Item {
-    //     id: content
-    //     anchors {
-    //         fill: parent
-    //         leftMargin: 12
-    //         rightMargin: 12
-    //         topMargin: 12
-    //         bottomMargin: 12
-    //     }
-    // clip: true
     ColumnLayout {
         id: col
-        // Layout.fillWidth: true
         anchors.fill: parent
         anchors {
             leftMargin: 12
@@ -78,5 +67,4 @@ Rectangle {
             }
         }
     }
-    // }
 }

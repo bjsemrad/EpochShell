@@ -79,7 +79,7 @@ Singleton {
 
     property int selectedBorderWidth: 1
     property int panelBottomMargin: 5
-    property int panelBottomMarginMedium: 5
+    property int panelBottomMarginMedium: 10
 
     property int statMargin: 12
 
