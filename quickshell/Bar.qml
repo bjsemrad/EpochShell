@@ -50,8 +50,8 @@ Scope {
                 children: [
                     BarFill {},
                     ApplicationLauncher {},
-                    HyprlandActiveTitle {},
-                    NiriActiveTitle {},
+                    // HyprlandActiveTitle {},
+                    // NiriActiveTitle {},
                     BarFill {}
                 ]
             }
