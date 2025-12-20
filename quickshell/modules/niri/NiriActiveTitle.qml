@@ -10,14 +10,14 @@ Rectangle {
     color: "transparent"
     implicitWidth: inner.implicitWidth + T.Config.widthPaddingLarge
     implicitHeight: inner.implicitHeight + T.Config.heightPaddingSmall
-    visible: S.CompositorService.isHyprland
+    visible: S.CompositorService.isNiri
     Row {
         id: inner
         anchors.centerIn: parent
         height: parent.height
         spacing: 5
         Text {
-            text: S.CompositorService.isHyprland && Hyprland.focusedWorkspace?.id === Hyprland.activeToplevel?.workspace?.id ? Hyprland.activeToplevel?.title : ""
+            text: S.NiriService.focusedWindowIndex !== -1 ? S.NiriService.windows[S.NiriService.focusedWindowIndex].title : ""
             font.pixelSize: T.Config.fontSizeNormal
             anchors.verticalCenter: parent.verticalCenter
             color: T.Config.surfaceText

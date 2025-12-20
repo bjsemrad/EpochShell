@@ -51,6 +51,7 @@ Scope {
                     BarFill {},
                     ApplicationLauncher {},
                     HyprlandActiveTitle {},
+                    NiriActiveTitle {},
                     BarFill {}
                 ]
             }
