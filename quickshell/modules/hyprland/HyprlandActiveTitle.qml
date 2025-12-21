@@ -17,12 +17,26 @@ Rectangle {
         height: parent.height
         spacing: 5
         Text {
-            text: S.CompositorService.isHyprland && Hyprland.focusedWorkspace?.id === Hyprland.activeToplevel?.workspace?.id ? (Hyprland.activeToplevel?.title || "") : ""
+            text: {
+                if (!S.CompositorService.isHyprland)
+                    return "";
+
+                const ws = Hyprland.focusedWorkspace;
+                const tl = Hyprland.activeToplevel;
+
+                if (!ws || ws.id === undefined)
+                    return "";
+                if (!tl || !tl.workspace || tl.workspace.id === undefined)
+                    return "";
+
+                return (ws.id === tl.workspace.id) ? (tl.title || "") : "";
+            }
             font.pixelSize: T.Config.fontSizeNormal
             anchors.verticalCenter: parent.verticalCenter
             color: T.Config.surfaceText
         }
     }
+
     Component.onCompleted: {
         Hyprland.refreshToplevels();
     }
