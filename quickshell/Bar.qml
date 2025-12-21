@@ -16,6 +16,7 @@ import qs.modules.tailscale
 import qs.modules.systemtray
 import qs.modules.hyprland
 import qs.modules.niri
+import qs.modules.nix
 import qs.services as S
 
 Scope {

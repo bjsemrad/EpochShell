@@ -4,11 +4,11 @@ import Quickshell.Services.UPower
 import qs.commonwidgets
 import qs.services as S
 
-BarIconPopup {
+BarGroupIconPopup {
     id: root
 
     mouseEnabled: true
     hoverEnabled: false
     visible: S.NixService.updatesAvailable
-    iconText: "󱄅"
+    iconSet: ["󱄅"]
 }

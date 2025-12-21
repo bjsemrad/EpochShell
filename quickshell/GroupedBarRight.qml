@@ -10,6 +10,7 @@ import qs.modules.systemtray
 import qs.modules.tailscale
 import qs.modules.wifi
 import qs.modules.overview
+import qs.modules.nix
 import qs.modules.controlcenter
 import qs.popups
 import qs.theme as T
@@ -20,6 +21,10 @@ RowLayout {
     //     id: musicControl
     //     popup: musicPanel
     // }
+    GroupedNixUpdates {
+        id: nixUpdates
+        popup: nixUpdatePanel
+    }
     GroupedBattery {
         id: groupedBattery
         popup: batteryPanel
@@ -41,6 +46,10 @@ RowLayout {
     ControlCenterPanel {
         id: systemPanel
         trigger: controlCenter
+    }
+    NixUpdatesPanel {
+        id: nixUpdatePanel
+        trigger: nixUpdates
     }
     // MusicPanel {
     //     id: musicPanel

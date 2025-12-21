@@ -9,12 +9,17 @@ import qs.modules.ethernet
 import qs.modules.systemtray
 import qs.modules.tailscale
 import qs.modules.wifi
+import qs.modules.nix
 import qs.popups
 import qs.theme as T
 
 RowLayout {
     spacing: 0
     BarFill {}
+    NixUpdates {
+        id: nixUpdates
+        popup: nixUpdatePanel
+    }
     WifiNetwork {
         id: wifiNet
         popup: wifiNetworkPanel
@@ -81,6 +86,10 @@ RowLayout {
     ControlCenterPanel {
         id: systemPanel
         trigger: systemOptions
+    }
+    NixUpdatesPanel {
+        id: nixUpdatePanel
+        trigger: nixUpdates
     }
     Clock {}
 }
