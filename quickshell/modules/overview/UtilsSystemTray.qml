@@ -29,7 +29,7 @@ Rectangle {
             spacing: 10
 
             Text {
-                anchors.verticalCenter: parent.verticalCenter
+                Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: 10
                 text: "Background Apps: "
                 color: T.Config.surfaceText
