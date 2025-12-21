@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-cd "$1"
 tmp="$(mktemp)"
 trap 'rm -f "$tmp"' EXIT
 
-nix flake update --output-lock-file "$tmp"
+nix flake update --flake "$1" --output-lock-file "$tmp"
 
 if cmp -s flake.lock "$tmp"; then
   echo "No updates for nixpkgs."

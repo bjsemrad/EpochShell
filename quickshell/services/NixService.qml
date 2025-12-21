@@ -17,13 +17,15 @@ Singleton {
         running: false
 
         stdout: SplitParser {
-            onRead: data => username = data.trim()
+            onRead: data => {
+                username = data.trim();
+                checkForUpdates.running = true;
+            }
         }
     }
 
     Component.onCompleted: {
         whoami.running = true;
-        checkForUpdates.running = true;
     }
 
     Timer {
@@ -42,16 +44,12 @@ Singleton {
 
         stdout: StdioCollector {
             onStreamFinished: {
-                console.log(checkForUpdates.command);
                 updateText = text;
-                console.log(text);
             }
         }
 
         onExited: (code, exitStatus) => {
             let lastExitCode = code;
-            console.log(code);
-            console.log(exitStatus);
             if (lastExitCode === 2) {
                 updatesAvailable = true;
             } else {
