@@ -48,10 +48,10 @@ Singleton {
 
         onExited: (code, exitStatus) => {
             let lastExitCode = code;
-            if (lastExitCode === 0) {
-                updatesAvailable = false;
-            } else {
+            if (lastExitCode === 2) {
                 updatesAvailable = true;
+            } else {
+                updatesAvailable = false;
             }
         }
     }
