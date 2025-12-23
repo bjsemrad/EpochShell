@@ -47,10 +47,10 @@ RowLayout {
         id: systemPanel
         trigger: controlCenter
     }
-    NixUpdatesPanel {
-        id: nixUpdatePanel
-        trigger: nixUpdates
-    }
+    // NixUpdatesPanel {
+    //     id: nixUpdatePanel
+    //     trigger: nixUpdates
+    // }
     // MusicPanel {
     //     id: musicPanel
     //     trigger: musicControl
