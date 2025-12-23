@@ -21,10 +21,10 @@ RowLayout {
     //     id: musicControl
     //     popup: musicPanel
     // }
-    GroupedNixUpdates {
-        id: nixUpdates
-        popup: nixUpdatePanel
-    }
+    // GroupedNixUpdates {
+    //     id: nixUpdates
+    //     popup: nixUpdatePanel
+    // }
     GroupedBattery {
         id: groupedBattery
         popup: batteryPanel
