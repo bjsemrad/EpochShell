@@ -6,7 +6,7 @@ import Quickshell.Io
 Singleton {
     id: hass
 
-    readonly property string configPath: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/epochshell/hass.json"
+    readonly property string configPath: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/epochshell-hass.json"
 
     property bool configured: false
     property bool connected: false
@@ -31,12 +31,12 @@ Singleton {
             token = String(cfg.token || "");
             favorites = Array.isArray(cfg.favorites) ? cfg.favorites : [];
             configured = baseUrl.length > 0 && token.length > 0;
-            statusText = configured ? "Ready" : "Configure ~/.config/epochshell/hass.json";
+            statusText = configured ? "Ready" : "Configure ~/.config/epochshell-hass.json";
             if (configured) refresh();
         } catch (e) {
             configured = false;
             connected = false;
-            statusText = "Invalid hass.json";
+            statusText = "Invalid epochshell-hass.json";
             console.log("hass config parse error:", e);
         }
     }

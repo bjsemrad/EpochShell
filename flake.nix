@@ -119,6 +119,34 @@
               description = "Start EpochShell (quickshell) via systemd --user.";
             };
 
+            homeAssistant = lib.mkOption {
+              type = lib.types.submodule {
+                options = {
+                  enable = lib.mkEnableOption "Home Assistant panel";
+
+                  baseUrl = lib.mkOption {
+                    type = lib.types.str;
+                    default = "";
+                    description = "Base URL for Home Assistant, for example http://homeassistant.local:8123.";
+                  };
+
+                  tokenFile = lib.mkOption {
+                    type = lib.types.nullOr lib.types.str;
+                    default = null;
+                    description = "Runtime path to a file containing a Home Assistant long-lived access token.";
+                  };
+
+                  favorites = lib.mkOption {
+                    type = lib.types.listOf lib.types.str;
+                    default = [ ];
+                    description = "Home Assistant entity IDs to show in the EpochShell panel.";
+                  };
+                };
+              };
+              default = { };
+              description = "Home Assistant panel configuration.";
+            };
+
             elephant = lib.mkOption {
               type = lib.types.submodule {
                 options = {
@@ -181,6 +209,54 @@
 
             # Install repo config into ~/.config/${cfg.configDir}
             xdg.configFile."${cfg.configDir}".source = "${self}/quickshell";
+
+            home.activation.epochshellHomeAssistantConfig = lib.mkIf cfg.homeAssistant.enable (
+              lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+                config_home="''${XDG_CONFIG_HOME:-''${HOME}/.config}"
+                config_file="$config_home/epochshell-hass.json"
+                token_file=${lib.escapeShellArg (if cfg.homeAssistant.tokenFile == null then "" else cfg.homeAssistant.tokenFile)}
+                base_url=${lib.escapeShellArg cfg.homeAssistant.baseUrl}
+
+                if [ -z "$token_file" ]; then
+                  echo "epochshell: programs.epochshell.homeAssistant.tokenFile is required when enabled" >&2
+                  exit 1
+                fi
+
+                if [ -z "$base_url" ]; then
+                  echo "epochshell: programs.epochshell.homeAssistant.baseUrl is required when enabled" >&2
+                  exit 1
+                fi
+
+                if [ ! -r "$token_file" ]; then
+                  echo "epochshell: Home Assistant token file is not readable: $token_file" >&2
+                  exit 1
+                fi
+
+                mkdir -p "$config_home"
+                export EPOCHSHELL_HASS_BASE_URL="$base_url"
+                export EPOCHSHELL_HASS_FAVORITES=${lib.escapeShellArg (builtins.toJSON cfg.homeAssistant.favorites)}
+                export EPOCHSHELL_HASS_TOKEN="$(tr -d '\n' < "$token_file")"
+
+                ${pkgs.python3}/bin/python3 -c '
+import json
+import os
+import sys
+
+path = sys.argv[1]
+data = {
+    "baseUrl": os.environ.get("EPOCHSHELL_HASS_BASE_URL", ""),
+    "token": os.environ.get("EPOCHSHELL_HASS_TOKEN", ""),
+    "favorites": json.loads(os.environ.get("EPOCHSHELL_HASS_FAVORITES", "[]")),
+}
+tmp = path + ".tmp"
+with open(tmp, "w", encoding="utf-8") as f:
+    json.dump(data, f, indent=2)
+    f.write("\n")
+os.chmod(tmp, 0o600)
+os.replace(tmp, path)
+' "$config_file"
+              ''
+            );
 
             # Elephant backend (launcher data providers) + its systemd user service
             programs.elephant.enable = lib.mkDefault cfg.elephant.enable;

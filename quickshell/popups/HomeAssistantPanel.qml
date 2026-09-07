@@ -55,7 +55,7 @@ HoverPopupWindow {
     Text {
         visible: !S.HomeAssistant.configured
         Layout.fillWidth: true
-        text: "Create ~/.config/epochshell/hass.json with baseUrl, token, and favorites."
+        text: "Create ~/.config/epochshell-hass.json with baseUrl, token, and favorites."
         color: T.Config.inactive
         font.pixelSize: T.Config.fontSizeSubtext
         wrapMode: Text.WordWrap
