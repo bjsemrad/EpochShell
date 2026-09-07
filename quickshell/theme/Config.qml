@@ -104,7 +104,7 @@ Singleton {
     property int cardSpacing: 10
 
     property int networkPopupWidth: 400
-    property int tailscalePopupWidth: 600
+    property int tailscalePopupWidth: 700
     property int bluetoothPopupWidth: 400
     property int audioPopupWidth: 550
     property int systemTrayPopupWidth: 300
@@ -234,7 +234,7 @@ Singleton {
         cardMargin = 14;
         cardSpacing = 10;
         networkPopupWidth = 400;
-        tailscalePopupWidth = 600;
+        tailscalePopupWidth = 700;
         bluetoothPopupWidth = 400;
         audioPopupWidth = 550;
         systemTrayPopupWidth = 300;

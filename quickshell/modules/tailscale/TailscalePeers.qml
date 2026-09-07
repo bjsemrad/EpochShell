@@ -66,6 +66,7 @@ Item {
                             color: mouseArea.containsMouse ? T.Config.activeSelection : "transparent"
 
                             Row {
+                                z: 1
                                 anchors {
                                     left: parent.left
                                     right: parent.right
@@ -132,6 +133,37 @@ Item {
                                         font.pixelSize: T.Config.tailscalePeersFontSize
                                         elide: Text.ElideRight
                                         anchors.verticalCenter: parent.verticalCenter
+                                    }
+                                }
+
+                                Rectangle {
+                                    visible: S.Tailscale.selectedFile.length > 0
+                                    width: 58
+                                    height: 24
+                                    radius: T.Config.roundRadius
+                                    color: sendMouse.containsMouse ? T.Config.accentLightShade : T.Config.surface
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    border.width: 1
+                                    border.color: T.Config.outline
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: S.Tailscale.sendingFile && S.Tailscale.sendTarget === modelData.taildropTarget ? "Sending" : "Send"
+                                        color: T.Config.surfaceText
+                                        font.pixelSize: T.Config.fontSizeSubtext
+                                        elide: Text.ElideRight
+                                    }
+
+                                    MouseArea {
+                                        id: sendMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        enabled: !S.Tailscale.sendingFile && modelData.taildropTarget.length > 0
+                                        onClicked: mouse => {
+                                            mouse.accepted = true;
+                                            S.Tailscale.sendFile(modelData);
+                                        }
                                     }
                                 }
                             }

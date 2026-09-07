@@ -9,6 +9,10 @@ Singleton {
 
     property bool connected: false
     property string magicDNSSuffix: ""
+    property string selectedFile: ""
+    property bool sendingFile: false
+    property string sendStatus: ""
+    property string sendTarget: ""
 
     // each row: { hostName, dnsName, connected, ip }
     property var peers: []
@@ -39,6 +43,72 @@ Singleton {
             tailscaleUp.running = true;
         } else {
             tailscaleDown.running = true;
+        }
+    }
+
+    function fileName(path) {
+        const value = String(path || "");
+        const idx = value.lastIndexOf("/");
+        return idx >= 0 ? value.slice(idx + 1) : value;
+    }
+
+    function clearSelectedFile() {
+        selectedFile = "";
+        sendStatus = "";
+        sendTarget = "";
+    }
+
+    function pathFromUrl(value) {
+        let path = String(value || "");
+        if (path.startsWith("file://")) {
+            path = path.slice(7);
+            try {
+                path = decodeURIComponent(path);
+            } catch (e) {
+            }
+        }
+        return path;
+    }
+
+    function selectFile(value) {
+        const path = pathFromUrl(value);
+        if (path.length > 0) {
+            selectedFile = path;
+            sendStatus = "Pick a peer to send " + fileName(path);
+        }
+    }
+
+    function targetForPeer(peer) {
+        if (!peer) return "";
+        return peer.hostName || peer.dnsName || peer.ip || "";
+    }
+
+    function sendFile(peer) {
+        if (sendingFile || selectedFile.length === 0) return;
+        const target = targetForPeer(peer);
+        if (target.length === 0) return;
+        sendTarget = target;
+        sendStatus = "Sending " + fileName(selectedFile) + " to " + target + "...";
+        sendingFile = true;
+        taildropProc.command = ["bash", "-c", "if tailscale file cp \"$1\" \"$2:\" >/dev/null; then printf ok; else printf fail; fi", "--", selectedFile, target];
+        taildropProc.running = true;
+    }
+
+    Process {
+        id: taildropProc
+        stdout: StdioCollector {
+            id: taildropOut
+            waitForEnd: true
+            onStreamFinished: {
+                const ok = taildropOut.text.trim() === "ok";
+                sendingFile = false;
+                sendStatus = ok ? ("Sent " + fileName(selectedFile) + " to " + sendTarget) : ("Failed to send " + fileName(selectedFile) + " to " + sendTarget);
+                if (ok) selectedFile = "";
+            }
+        }
+        stderr: StdioCollector {
+            id: taildropErr
+            waitForEnd: true
         }
     }
 
@@ -75,11 +145,14 @@ Singleton {
                             continue;
                         const p = peers[key];
 
+                        const dnsName = p.DNSName ? p.DNSName.slice(0, -1) : "";
+                        const ip = (p.TailscaleIPs && p.TailscaleIPs.length > 0) ? p.TailscaleIPs[0] : "";
                         arr.push({
                             hostName: p.HostName || "",
-                            dnsName: p.DNSName.slice(0, -1) || "",
+                            dnsName: dnsName,
                             connected: !!p.Online,
-                            ip: (p.TailscaleIPs && p.TailscaleIPs.length > 0) ? p.TailscaleIPs[0] : ""
+                            ip: ip,
+                            taildropTarget: p.HostName || dnsName || ip
                         });
                     }
 

@@ -34,7 +34,8 @@ HoverPopupWindow {
     ComponentSplitter{}
     TailscaleConnectedNetwork{}
     ComponentSplitter{}
+    TailscaleFileDrop{ popupWindow: tailscalePopup }
+    ComponentSplitter{}
     TailscalePeers{}
     ComponentSpacer{}
 }
-
