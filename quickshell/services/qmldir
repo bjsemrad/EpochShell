@@ -9,3 +9,4 @@ singleton NiriService 1.0 NiriService.qml
 singleton CompositorService 1.0 CompositorService.qml
 singleton Notifications 1.0 NotificationService.qml
 singleton LauncherService 1.0 LauncherService.qml
+singleton HomeAssistant 1.0 HomeAssistantService.qml

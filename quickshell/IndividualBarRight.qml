@@ -10,6 +10,7 @@ import qs.modules.battery
 import qs.modules.bluetooth
 import qs.modules.ethernet
 import qs.modules.tailscale
+import qs.modules.homeassistant
 import qs.modules.wifi
 import qs.modules.notifications
 import qs.modules.controlcenter
@@ -211,6 +212,10 @@ RowLayout {
         id: tailNet
         popup: tailscaleNetworkPanel
     }
+    HomeAssistantWidget {
+        id: hass
+        popup: homeAssistantPanel
+    }
     Battery {
         id: battery
         popup: batteryPanel
@@ -238,6 +243,11 @@ RowLayout {
     TailscaleNetworkPanel {
         id: tailscaleNetworkPanel
         trigger: tailNet
+    }
+
+    HomeAssistantPanel {
+        id: homeAssistantPanel
+        trigger: hass
     }
 
     AudioPanel {
