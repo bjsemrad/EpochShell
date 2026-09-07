@@ -15,6 +15,7 @@ Singleton {
     readonly property int historyLimit: 30
     readonly property int normalTimeout: 3500
     readonly property int lowTimeout: 2000
+    readonly property string imageStateDir: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/epochshell/notifications/images/"
 
     readonly property var browserNames: ({
         "brave": "brave-",
@@ -65,39 +66,74 @@ Singleton {
         return String(cls || "").replace(/__-?Default$/, "");
     }
 
-    function findBrowserWindowClass(appName, desktopEntry, title) {
+    function chromiumOriginHost(body) {
+        const text = String(body || "").toLowerCase();
+        let match = /^\s*<a\b[^>]*>\s*(?:https?:\/\/|www\.)?((?:[a-z0-9-]+\.)+[a-z]{2,})/i.exec(text);
+        if (match) return match[1];
+        match = /^\s*(?:https?:\/\/|www\.)?((?:[a-z0-9-]+\.)+[a-z]{2,})(?::\d+)?(?:\/\S*)?\s+/i.exec(text);
+        return match ? match[1] : "";
+    }
+
+    function originSignals(host) {
+        const value = String(host || "").toLowerCase();
+        if (value.length === 0) return [];
+        const out = [value];
+        if (value.startsWith("www.")) out.push(value.slice(4));
+        if (value.indexOf("mail.google.") !== -1) out.push("gmail");
+        const parts = value.split(/[\-.]+/).filter(p => p.length >= 4 && ["mail", "google"].indexOf(p) === -1);
+        for (let i = 0; i < parts.length; i++) out.push(parts[i]);
+        return out;
+    }
+
+    function findBestBrowserWindow(appName, desktopEntry, title, body) {
         const browserPrefix = browserPrefixForAppName(`${appName} ${desktopEntry}`);
-        if (!browserPrefix) return "";
+        if (!browserPrefix) return null;
 
         const prefix = browserPrefix.toLowerCase();
         const toplevels = [];
 
-        const workspaces = Hyprland.workspaces.values;
-        for (let w = 0; w < workspaces.length; w++) {
-            const tls = workspaces[w].toplevels.values;
-            for (let t = 0; t < tls.length; t++) {
-                const keys = [tls[t].lastIpcObject?.class, tls[t].lastIpcObject?.initialClass, tls[t].wayland?.appId].filter(k => !!k);
-                let cls = "";
-                for (let k = 0; k < keys.length; k++) {
-                    const key = String(keys[k]);
-                    if (key.toLowerCase().startsWith(prefix)) {
-                        cls = normalizeClass(key);
-                        break;
-                    }
-                }
-
-                if (cls.length > 0) {
+        if (CompositorService.isNiri) {
+            const windows = NiriService.windows;
+            for (let i = 0; i < windows.length; i++) {
+                const cls = normalizeClass(windows[i].appId || "");
+                if (cls.toLowerCase().startsWith(prefix)) {
                     toplevels.push({
                         cls: cls,
-                        title: String(tls[t].lastIpcObject?.title || "").toLowerCase(),
-                        generic: isGenericBrowserClass(prefix, cls)
+                        title: String(windows[i].title || "").toLowerCase(),
+                        generic: isGenericBrowserClass(prefix, cls),
+                        win: null
                     });
+                }
+            }
+        } else {
+            const workspaces = Hyprland.workspaces.values;
+            for (let w = 0; w < workspaces.length; w++) {
+                const tls = workspaces[w].toplevels.values;
+                for (let t = 0; t < tls.length; t++) {
+                    const keys = [tls[t].lastIpcObject?.class, tls[t].lastIpcObject?.initialClass, tls[t].wayland?.appId].filter(k => !!k);
+                    let cls = "";
+                    for (let k = 0; k < keys.length; k++) {
+                        const key = String(keys[k]);
+                        if (key.toLowerCase().startsWith(prefix)) {
+                            cls = normalizeClass(key);
+                            break;
+                        }
+                    }
+
+                    if (cls.length > 0) {
+                        toplevels.push({
+                            cls: cls,
+                            title: String(tls[t].lastIpcObject?.title || "").toLowerCase(),
+                            generic: isGenericBrowserClass(prefix, cls),
+                            win: tls[t]
+                        });
+                    }
                 }
             }
         }
 
-        if (toplevels.length === 0) return "";
-        if (toplevels.length === 1) return toplevels[0].cls;
+        if (toplevels.length === 0) return null;
+        if (toplevels.length === 1) return toplevels[0];
 
         const tl = String(title || "").toLowerCase();
         const tokens = String(appName || "")
@@ -109,12 +145,16 @@ Singleton {
             .replace(/[^a-z0-9 ]+/g, " ")
             .split(/\s+/)
             .filter(t => t.length >= 4 && ["from", "the", "for", "with", "this", "that", "your", "have"].indexOf(t) === -1);
+        const signals = originSignals(chromiumOriginHost(body));
 
         let best = toplevels[0];
         let bestScore = -Infinity;
         for (let i = 0; i < toplevels.length; i++) {
             const t = toplevels[i];
             let score = t.generic ? -100 : 0;
+            for (let n = 0; n < signals.length; n++) {
+                if (t.cls.toLowerCase().indexOf(signals[n]) !== -1) score += n === 0 ? 120 : 80;
+            }
             for (let n = 0; n < tokens.length; n++) {
                 if (t.cls.toLowerCase().indexOf(tokens[n]) !== -1) score += 30;
             }
@@ -131,110 +171,167 @@ Singleton {
             }
         }
 
-        if (bestScore > -50) return best.cls;
+        if (bestScore > -50) return best;
 
         if (CompositorService.activeWindowClass.toLowerCase().startsWith(prefix)
                 && !isGenericBrowserClass(prefix, CompositorService.activeWindowClass)) {
-            return normalizeClass(CompositorService.activeWindowClass);
+            return { cls: normalizeClass(CompositorService.activeWindowClass), win: null };
         }
 
         for (let i = 0; i < toplevels.length; i++) {
             if (!toplevels[i].generic) {
-                return toplevels[i].cls;
+                return toplevels[i];
             }
         }
 
         if (CompositorService.activeWindowClass.toLowerCase().startsWith(prefix)) {
-            return normalizeClass(CompositorService.activeWindowClass);
+            return { cls: normalizeClass(CompositorService.activeWindowClass), win: null };
         }
 
-        return toplevels[0].cls;
+        return toplevels[0];
     }
 
-    function isTempPath(path) {
-        return path.indexOf("/tmp/") !== -1;
+    function workspaceIconForWindow(win) {
+        if (!win) return "";
+        const keys = [win.lastIpcObject?.class, win.lastIpcObject?.initialClass, win.wayland?.appId].filter(k => !!k);
+        let entry = null;
+        for (let i = 0; i < keys.length && !entry; i++) {
+            entry = CompositorService.getDesktopEntry(String(keys[i]));
+        }
+        if (entry) {
+            const resolved = CompositorService.getDesktopIcon(entry);
+            if (resolved.length > 0) return resolved;
+        }
+        return "";
     }
 
-    function snapshotOf(notification) {
+    function localImageFile(value) {
+        let path = String(value || "");
+        if (path.startsWith("file://")) {
+            path = path.slice(7);
+            try {
+                path = decodeURIComponent(path);
+            } catch (e) {
+            }
+        } else if (path.startsWith("image://icon/")) {
+            path = path.slice("image://icon/".length);
+        }
+        return path.startsWith("/") ? path : "";
+    }
+
+    function persistNotificationImages(notificationId, timestamp, appIcon, image) {
+        const stem = String(timestamp) + "-" + String(notificationId);
+        const out = { appIcon: String(appIcon || ""), image: String(image || "") };
+        const command = ["bash", "-c",
+            "dir=$1; shift\n" +
+            "mkdir -p \"$dir\" || exit 0\n" +
+            "while [ $# -ge 2 ]; do\n" +
+            "  if [ -f \"$1\" ] && timeout 5 head -c 5242881 -- \"$1\" > \"$2.tmp\" 2>/dev/null && [ $(stat -c%s -- \"$2.tmp\") -le 5242880 ]; then mv -f -- \"$2.tmp\" \"$2\"; else rm -f -- \"$2.tmp\"; fi\n" +
+            "  shift 2\n" +
+            "done", "--", imageStateDir];
+        let copies = 0;
+
+        const appIconSource = localImageFile(out.appIcon);
+        if (appIconSource.length > 0) {
+            const target = imageStateDir + stem + "-appIcon";
+            command.push(appIconSource, target);
+            out.appIcon = "file://" + target;
+            copies += 1;
+        } else if (out.appIcon.startsWith("image://")) {
+            out.appIcon = "";
+        }
+
+        const imageSource = localImageFile(out.image);
+        if (imageSource.length > 0) {
+            const target = imageStateDir + stem + "-image";
+            command.push(imageSource, target);
+            out.image = "file://" + target;
+            copies += 1;
+        } else if (out.image.startsWith("image://")) {
+            out.image = "";
+        }
+
+        if (copies > 0) Quickshell.execDetached(command);
+        return out;
+    }
+
+    function snapshotOf(notification, persistImages, notificationId, timestamp) {
         const appName = String(notification.appName || "");
         const desktopEntry = String(notification.desktopEntry || "");
         const image = String(notification.image || "");
         const appIcon = String(notification.appIcon || "");
         const summary = String(notification.summary || "");
-        let windowClass = findBrowserWindowClass(appName, desktopEntry, summary);
-        let icon = "";
+        const body = String(notification.body || "");
+        const imageValues = persistImages ? persistNotificationImages(notificationId, timestamp, appIcon, image) : { appIcon: appIcon, image: image };
+        let windowClass = "";
+        let displayAppIcon = imageValues.appIcon;
+        let displayImage = imageValues.image;
 
         const isBrowser = browserPrefixForAppName(`${appName} ${desktopEntry}`).length > 0;
-        const hasImage = image.length > 0;
-        const hasAppIcon = appIcon.length > 0 && !isTempPath(appIcon);
+        const hasImage = displayImage.length > 0;
+        const hasAppIcon = displayAppIcon.length > 0;
 
         if (isBrowser) {
-            if (windowClass.length > 0) {
-                const entry = CompositorService.getDesktopEntry(windowClass);
-                if (entry) {
-                    const resolved = CompositorService.getDesktopIcon(entry);
-                    if (resolved.length > 0) {
-                        icon = resolved;
-                    }
+            const win = findBestBrowserWindow(appName, desktopEntry, summary, body);
+            if (win) {
+                windowClass = win.cls;
+                if (!hasImage && !hasAppIcon) {
+                    displayAppIcon = workspaceIconForWindow(win.win);
                 }
-            }
-            if (icon.length === 0 && hasImage) {
-                icon = image;
-            }
-            if (icon.length === 0 && hasAppIcon) {
-                icon = appIcon;
             }
         } else {
             if (hasAppIcon) {
-                icon = appIcon;
+                displayAppIcon = imageValues.appIcon;
             } else if (desktopEntry.length > 0) {
                 const entry = CompositorService.getDesktopEntry(desktopEntry);
                 if (entry) {
-                    icon = CompositorService.getDesktopIcon(entry);
+                    displayAppIcon = CompositorService.getDesktopIcon(entry);
                 }
             }
-            if (icon.length === 0 && appName.length > 0) {
+            if (displayAppIcon.length === 0 && appName.length > 0) {
                 const entry = CompositorService.getDesktopEntry(appName);
                 if (entry) {
-                    icon = CompositorService.getDesktopIcon(entry);
+                    displayAppIcon = CompositorService.getDesktopIcon(entry);
                 }
-            }
-            if (icon.length === 0 && hasImage) {
-                icon = image;
             }
         }
 
         return {
-            notificationId: notification.id || Date.now(),
+            notificationId: notificationId,
             appName: appName,
-            appIcon: icon,
+            appIcon: displayAppIcon,
             windowClass: windowClass,
             desktopEntry: desktopEntry,
             summary: String(notification.summary || ""),
-            body: String(notification.body || ""),
-            image: image,
+            body: isBrowser ? body
+                .replace(/^\s*<a\b[^>]*>\s*(?:https?:\/\/|www\.)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?::\d+)?(?:\/[^<\s]*)?\s*<\/a>\s*/i, "")
+                .replace(/^\s*(?:https?:\/\/|www\.)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?::\d+)?(?:\/\S*)?\s+/i, "") : body,
+            image: displayImage,
             urgency: notification.urgency,
-            timestamp: Date.now()
+            timestamp: timestamp
         };
     }
 
     function handleNotification(notification) {
         notification.tracked = true;
 
-        const item = snapshotOf(notification);
-        liveNotifications[item.notificationId] = notification;
+        const timestamp = Date.now();
+        const notificationId = notification.id || timestamp;
+        const historyItem = snapshotOf(notification, true, notificationId, timestamp);
+        const toastItem = snapshotOf(notification, false, notificationId, timestamp);
+        liveNotifications[notificationId] = notification;
 
         notification.closed.connect(function() {
-            if (liveNotifications[item.notificationId] === notification) {
-                delete liveNotifications[item.notificationId];
+            if (liveNotifications[notificationId] === notification) {
+                delete liveNotifications[notificationId];
             }
         });
 
-        addHistory(item);
+        addHistory(historyItem);
         unreadCount += 1;
 
         if (!doNotDisturb) {
-            toastModel.insert(0, item);
+            toastModel.insert(0, toastItem);
         }
     }
 
@@ -309,9 +406,9 @@ Singleton {
         delete liveNotifications[id];
     }
 
-    function invokeDefault(id) {
+    function invokeDefaultAction(id) {
         const notification = liveNotifications[id];
-        if (!notification) return;
+        if (!notification) return false;
 
         try {
             if (notification.actions) {
@@ -319,27 +416,44 @@ Singleton {
                     const action = notification.actions[i];
                     if (action && action.identifier === "default") {
                         action.invoke();
-                        break;
+                        return true;
                     }
                 }
             }
         } catch (e) {
         }
+        return false;
+    }
+
+    function closeNotificationEverywhere(id) {
         closeLiveNotification(id);
         removeToastById(id);
         removeHistoryById(id);
     }
 
+    function invokeDefault(id) {
+        invokeDefaultAction(id);
+        closeNotificationEverywhere(id);
+    }
+
     function focusAndDismiss(id, appName, windowClass) {
+        if (invokeDefaultAction(id)) {
+            closeNotificationEverywhere(id);
+            return;
+        }
         if (windowClass && windowClass.length > 0) {
             CompositorService.focusWindowByClass(windowClass);
         } else if (appName && appName.length > 0) {
             CompositorService.focusWindowByAppName(appName);
         }
-        invokeDefault(id);
+        closeNotificationEverywhere(id);
     }
 
-    function focusFromHistory(appName, index, windowClass) {
+    function focusFromHistory(id, appName, index, windowClass) {
+        if (invokeDefaultAction(id)) {
+            closeNotificationEverywhere(id);
+            return;
+        }
         if (windowClass && windowClass.length > 0) {
             CompositorService.focusWindowByClass(windowClass);
         } else if (appName && appName.length > 0) {

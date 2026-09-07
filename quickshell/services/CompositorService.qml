@@ -46,8 +46,6 @@ Singleton {
     function focusWindowByAppName(appName) {
         if (!appName || appName.length === 0) return;
 
-        console.log("CompositorService: focusWindowByAppName called with:", appName);
-
         if (isHyprland) {
             Hyprland.dispatch(`hl.dsp.focus({ window = "class:(?i).*${appName}.*" })`);
         } else if (isNiri) {
@@ -65,18 +63,21 @@ Singleton {
         return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     }
 
+    function normalizeWindowClass(value) {
+        return String(value || "").replace(/__-?Default$/, "");
+    }
+
     function focusWindowByClass(windowClass) {
         if (!windowClass || windowClass.length === 0) return;
-
-        console.log("CompositorService: focusWindowByClass called with:", windowClass);
 
         if (isHyprland) {
             const luaSafe = escapeRegex(windowClass).replace(/\\/g, "\\\\");
             Hyprland.dispatch('hl.dsp.focus({ window = "class:(?i)^' + luaSafe + '(?:__-?Default)?$" })');
         } else if (isNiri) {
+            const target = normalizeWindowClass(windowClass).toLowerCase();
             const windows = NiriService.windows;
             for (let i = 0; i < windows.length; i++) {
-                if (windows[i].appId && windows[i].appId.toLowerCase() === windowClass.toLowerCase()) {
+                if (windows[i].appId && normalizeWindowClass(windows[i].appId).toLowerCase() === target) {
                     Quickshell.execDetached(["niri", "msg", "action", "focus-window", "--id", windows[i].id.toString()]);
                     return;
                 }

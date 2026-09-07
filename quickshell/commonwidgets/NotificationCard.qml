@@ -21,14 +21,14 @@ Rectangle {
     signal dismissRequested()
     signal clicked()
 
-    readonly property string iconSource: {
-        if (appIcon.length > 0) {
-            if (appIcon.startsWith("/") && !appIcon.startsWith("file:")) return "file://" + appIcon;
-            if (appIcon.startsWith("file:") || appIcon.startsWith("http") || appIcon.startsWith("data:") || appIcon.startsWith("image:")) return appIcon;
-            return Quickshell.iconPath(appIcon, "");
-        }
-        if (image.length > 0) return image;
-        return "";
+    readonly property string iconSource: image.length > 0 ? image : iconSourceOf(appIcon)
+
+    function iconSourceOf(icon) {
+        const value = String(icon || "");
+        if (value.length === 0) return "";
+        if (value.startsWith("file:") || value.startsWith("http") || value.startsWith("data:") || value.startsWith("image:")) return value;
+        if (value.startsWith("/")) return "file://" + value;
+        return Quickshell.iconPath(value, true);
     }
 
     implicitWidth: 360
@@ -67,11 +67,17 @@ Rectangle {
         }
         spacing: T.Config.cardSpacing
 
-        IconImage {
-            visible: root.iconSource.length > 0
+        Image {
+            id: iconImage
+            visible: root.iconSource.length > 0 && status !== Image.Error
             source: root.iconSource
-            implicitWidth: T.Config.connectedIconSize
-            implicitHeight: T.Config.connectedIconSize
+            sourceSize.width: T.Config.connectedIconSize * Screen.devicePixelRatio
+            sourceSize.height: T.Config.connectedIconSize * Screen.devicePixelRatio
+            fillMode: Image.PreserveAspectFit
+            asynchronous: true
+            smooth: true
+            width: T.Config.connectedIconSize
+            height: T.Config.connectedIconSize
             Layout.preferredWidth: visible ? T.Config.connectedIconSize : 0
             Layout.preferredHeight: visible ? T.Config.connectedIconSize : 0
             Layout.alignment: Qt.AlignTop

@@ -124,7 +124,7 @@ HoverPopupWindow {
                 image: historySlot.image
                 urgency: historySlot.urgency
                 closeVisible: true
-                onClicked: S.Notifications.focusFromHistory(historySlot.appName, historySlot.index, historySlot.windowClass)
+                onClicked: S.Notifications.focusFromHistory(historySlot.notificationId, historySlot.appName, historySlot.index, historySlot.windowClass)
                 onDismissRequested: S.Notifications.dismissHistory(historySlot.index)
             }
         }
