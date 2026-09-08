@@ -112,6 +112,11 @@ name and icon. Entries either run a command on Enter or hand back text to copy, 
 replaces the entry list with a generator that produces them live. See EpochOxide's README for the
 file format; the shell reads whatever the backend reports.
 
+An `icon` is either a freedesktop icon name resolved through the icon theme (`input-keyboard`) or
+a Nerd Font glyph drawn in the theme font (`icon = "󰌌"`), at menu level, entry level, or both —
+a menu's icon is the fallback for entries that name none. Anything short and outside the ASCII
+range is treated as a glyph, so icon names are never mistaken for one.
+
 Menus are deployed the same way as everything else here — from the dotfiles repo, not by hand.
 `users/brian/modules/epochshell/` holds the keybinds menu: `menus/keybinds.sh` reads the running
 compositor's binds (niri's `config.kdl`, else `hyprctl binds` cross-referenced against

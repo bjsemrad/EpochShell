@@ -527,6 +527,11 @@ PanelWindow {
                         required property string previewType
 
                         readonly property bool isCurrent: root.currentIndex === index
+                        // An icon is either a freedesktop icon name for the image provider to
+                        // resolve, or a glyph to draw in the theme font (a Nerd Font codepoint
+                        // sits above the BMP's ASCII/symbol range, as one char or a surrogate
+                        // pair). Menus name their icon by hand, so both are worth accepting.
+                        readonly property bool iconIsGlyph: icon.length > 0 && icon.length <= 2 && icon.charCodeAt(0) > 0x2000
                         width: listView.width - 2
                         implicitHeight: 48
                         radius: T.Config.cardRadius
@@ -557,21 +562,23 @@ PanelWindow {
                                     id: iconImage
                                     anchors.fill: parent
                                     anchors.margins: 4
-                                    source: delegateRoot.icon.length > 0 ? "image://icon/" + delegateRoot.icon : ""
+                                    source: delegateRoot.icon.length > 0 && !delegateRoot.iconIsGlyph ? "image://icon/" + delegateRoot.icon : ""
                                     fillMode: Image.PreserveAspectFit
                                     smooth: true
-                                    visible: delegateRoot.icon.length > 0 && status === Image.Ready
+                                    visible: delegateRoot.icon.length > 0 && !delegateRoot.iconIsGlyph && status === Image.Ready
                                 }
 
                                 Text {
                                     anchors.centerIn: parent
                                     visible: !iconImage.visible
-                                    text: delegateRoot.provider === "provider"
+                                    text: delegateRoot.iconIsGlyph
+                                        ? delegateRoot.icon
+                                        : delegateRoot.provider === "provider"
                                         ? (delegateRoot.identifier.length > 0 ? delegateRoot.identifier.charAt(0) : delegateRoot.text.charAt(0).toUpperCase())
                                         : (delegateRoot.text.length > 0 ? delegateRoot.text.charAt(0).toUpperCase() : "?")
-                                    color: T.Config.inactive
+                                    color: delegateRoot.iconIsGlyph ? T.Config.surfaceText : T.Config.inactive
                                     font.family: T.Config.fontFamily
-                                    font.pixelSize: T.Config.fontSizeNormal
+                                    font.pixelSize: delegateRoot.iconIsGlyph ? T.Config.barIconSize : T.Config.fontSizeNormal
                                 }
                             }
 
