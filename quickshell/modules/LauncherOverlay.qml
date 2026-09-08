@@ -278,7 +278,7 @@ PanelWindow {
             previewProvider = provider;
             previewTitle = provider === "clipboard" ? "CLIPBOARD" : "FILE";
             previewSubtext = row.text;
-            if (provider === "clipboard" || row.previewType === "text") {
+            if (row.previewType === "text") {
                 previewText = root.truncate(preview, root.previewTextMax);
                 previewImage = "";
             } else if (isNativeImagePath(preview)) {
