@@ -28,14 +28,14 @@ PanelWindow {
         id: providerModel
     }
 
-    function appendProviderRow(name, prefix, text, subtext) {
+    function appendProviderRow(name, prefix, text, subtext, icon) {
         providerModel.append({
             provider: "provider",
             name: name,
             identifier: prefix,
             text: text,
             subtext: subtext,
-            icon: "",
+            icon: icon || "",
             action: "",
             preview: "",
             previewType: ""
@@ -49,9 +49,9 @@ PanelWindow {
         for (const cap of S.LauncherService.providerCapabilities) {
             if (!cap.supportsQuery) continue;
             const prefix = cap.prefixes.length > 0 ? cap.prefixes[0] : "";
-            root.appendProviderRow(cap.name, prefix, cap.namePretty, cap.description);
+            root.appendProviderRow(cap.name, prefix, cap.namePretty, cap.description, cap.icon);
         }
-        root.appendProviderRow(S.LauncherService.allPrefix, S.LauncherService.allPrefix, "All providers", "Search across every provider");
+        root.appendProviderRow(S.LauncherService.allPrefix, S.LauncherService.allPrefix, "All providers", "Search across every provider", "");
     }
 
     visible: _visible
@@ -60,7 +60,6 @@ PanelWindow {
         panelAnimate = false;
         inputField.text = "";
         showingProviders = false;
-        S.LauncherService.clearMenu();
         currentIndex = -1;
         previewVisible = false;
         previewText = "";
@@ -85,7 +84,6 @@ PanelWindow {
         _visible = false;
         inputField.text = "";
         showingProviders = false;
-        S.LauncherService.clearMenu();
         currentIndex = -1;
         listView.currentIndex = -1;
     }
@@ -105,25 +103,34 @@ PanelWindow {
         function toggle(): void { root.toggle(); }
         function open(): void { root.open(); }
         function close(): void { root.close(); }
-        function openKeybinds(): void {
-            root.open();
-            root.openMenu("keybinds", "Keybinds");
-        }
+        function openProvider(name: string): void { root.openProvider(name); }
+        function openKeybinds(): void { root.openProvider("keybinds"); }
     }
 
     function chooseProvider(prefix) {
         showingProviders = false;
-        S.LauncherService.clearMenu();
         inputField.text = prefix;
         inputField.forceActiveFocus();
         S.LauncherService.setQuery(inputField.text);
     }
 
-    function openMenu(name, label) {
-        showingProviders = false;
-        inputField.text = "";
-        S.LauncherService.openMenu(name, label);
-        inputField.forceActiveFocus();
+    // Jumps straight to a provider by name, which is how a menu is opened now that each one is a
+    // provider of its own: type its prefix for it. The name is held until the backend has answered
+    // with its capabilities if the launcher is opened before that lands.
+    property string pendingProvider: ""
+
+    function openProvider(name) {
+        root.open();
+        root.pendingProvider = name;
+        root.applyPendingProvider();
+    }
+
+    function applyPendingProvider() {
+        if (root.pendingProvider.length === 0) return;
+        const prefix = S.LauncherService.prefixForProvider(root.pendingProvider);
+        if (prefix.length === 0) return;
+        root.pendingProvider = "";
+        root.chooseProvider(prefix);
     }
 
     function activateCurrent() {
@@ -132,11 +139,6 @@ PanelWindow {
         if (!delegate) return;
         if (root.showingProviders) {
             root.chooseProvider(delegate.identifier);
-            return;
-        }
-        // A menus-provider result is the menu itself; drill into it instead of activating it.
-        if (delegate.provider === "menus" && String(delegate.identifier).startsWith("menus:")) {
-            root.openMenu(String(delegate.identifier).slice(6), delegate.text);
             return;
         }
         S.LauncherService.activate(delegate.provider, delegate.identifier, delegate.action);
@@ -148,7 +150,6 @@ PanelWindow {
     }
 
     function scopedProvider() {
-        if (S.LauncherService.menuScope.length > 0) return "menus";
         const prefix = S.LauncherService.prefixFor(inputField.text);
         if (prefix.length > 0) return prefix === S.LauncherService.allPrefix ? "" : S.LauncherService.providerForPrefix(prefix);
         if (S.LauncherService.providerAvailable("calc") && S.LauncherService.isMathQuery(inputField.text)) return "calc";
@@ -157,7 +158,6 @@ PanelWindow {
 
     function scopeLabel() {
         if (root.showingProviders) return "Choose provider";
-        if (S.LauncherService.menuScope.length > 0) return S.LauncherService.menuLabel;
         if (S.LauncherService.prefixFor(inputField.text) === S.LauncherService.allPrefix) return "All providers";
         const provider = root.scopedProvider();
         return provider.length > 0 ? S.LauncherService.prettyName(provider) : "All providers";
@@ -170,7 +170,7 @@ PanelWindow {
     }
 
     function chipActive(name, prefix) {
-        if (root.showingProviders || S.LauncherService.menuScope.length > 0) return false;
+        if (root.showingProviders) return false;
         const typed = S.LauncherService.prefixFor(inputField.text);
         if (typed.length > 0) return typed === prefix;
         return name === root.scopedProvider();
@@ -178,9 +178,6 @@ PanelWindow {
 
     function providerLabel(name, identifier) {
         if (name === "provider") return identifier || "→";
-        const id = String(identifier || "");
-        // Menu entries are identified as "<menu>:<index>"; label them with the menu they came from.
-        if (name === "menus" && !id.startsWith("menus:") && id.indexOf(":") > 0) return id.slice(0, id.indexOf(":"));
         return name;
     }
 
@@ -442,13 +439,6 @@ PanelWindow {
                             root.close();
                             event.accepted = true;
                         }
-                        Keys.onPressed: event => {
-                            if (event.key === Qt.Key_Backspace && inputField.text.length === 0 && S.LauncherService.menuScope.length > 0) {
-                                S.LauncherService.clearMenu();
-                                S.LauncherService.setQuery("");
-                                event.accepted = true;
-                            }
-                        }
 
                         onTextChanged: {
                             showingProviders = text === ";";
@@ -567,15 +557,15 @@ PanelWindow {
                                     id: iconImage
                                     anchors.fill: parent
                                     anchors.margins: 4
-                                    source: delegateRoot.provider === "provider" ? "" : (delegateRoot.icon ? "image://icon/" + delegateRoot.icon : "")
+                                    source: delegateRoot.icon.length > 0 ? "image://icon/" + delegateRoot.icon : ""
                                     fillMode: Image.PreserveAspectFit
                                     smooth: true
-                                    visible: delegateRoot.provider !== "provider" && delegateRoot.icon.length > 0 && status === Image.Ready
+                                    visible: delegateRoot.icon.length > 0 && status === Image.Ready
                                 }
 
                                 Text {
                                     anchors.centerIn: parent
-                                    visible: !(delegateRoot.provider !== "provider" && delegateRoot.icon.length > 0 && iconImage.status === Image.Ready)
+                                    visible: !iconImage.visible
                                     text: delegateRoot.provider === "provider"
                                         ? (delegateRoot.identifier.length > 0 ? delegateRoot.identifier.charAt(0) : delegateRoot.text.charAt(0).toUpperCase())
                                         : (delegateRoot.text.length > 0 ? delegateRoot.text.charAt(0).toUpperCase() : "?")
@@ -899,7 +889,10 @@ PanelWindow {
 
     Connections {
         target: S.LauncherService
-        function onProvidersUpdated() { root.buildProviderMenu() }
+        function onProvidersUpdated() {
+            root.buildProviderMenu();
+            root.applyPendingProvider();
+        }
     }
 
     Component.onCompleted: {

@@ -80,8 +80,11 @@ EpochOxide config), so the shell never hardcodes them. With the EpochOxide defau
 | `>` | Runner |
 | `#` | Clipboard |
 | `@` | Windows |
-| `?` | Calculator |
-| `:` | Menus |
+| `=` | Calculator |
+
+Each custom menu in EpochOxide's `menus_dir` is a provider of its own, named after the menu, so it
+takes a prefix the same way and is jumped straight into rather than drilled down to. Giving the
+keybinds menu `?` is a `"?" = "keybinds"` line in `[query_prefixes]`.
 
 Two prefixes are the shell's own, not the backend's:
 

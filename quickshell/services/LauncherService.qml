@@ -18,8 +18,6 @@ Singleton {
     property var availableProviders: []
     property var providersByPrefix: ({})
     readonly property string defaultProviders: availableProviders.join(",")
-    property string menuScope: ""
-    property string menuLabel: ""
     readonly property bool backendConnected: socketLoader.item !== null && socketLoader.item.connected
     property string backendError: ""
     property bool _providersLoaded: false
@@ -52,7 +50,7 @@ Singleton {
     function providerAvailable(provider) {
         // Optimistic until the first Providers round-trip lands: on a fresh launcher open the
         // prefix routing below (e.g. "/" -> files) would otherwise always lose the race against
-        // that async response and silently fall back to searching apps with a leading "/"/":"/etc.
+        // that async response and silently fall back to searching apps with a leading "/"/"@"/etc.
         // still in the query text.
         if (!root._providersLoaded) return true;
         const base = String(provider).split(":")[0];
@@ -92,6 +90,11 @@ Singleton {
         return cap ? cap.namePretty : name;
     }
 
+    function prefixForProvider(name) {
+        const cap = root.capabilityFor(name);
+        return cap && cap.prefixes.length > 0 ? cap.prefixes[0] : "";
+    }
+
     function applyProviders(list) {
         const caps = [];
         const names = [];
@@ -105,6 +108,7 @@ Singleton {
                 name: name,
                 namePretty: String(raw.name_pretty || name),
                 description: String(raw.description || ""),
+                icon: String(raw.icon || ""),
                 prefixes: prefixes,
                 supportsQuery: raw.supports_query !== false
             });
@@ -129,17 +133,6 @@ Singleton {
         case 5: return "EpochOxide timed out";
         default: return "Cannot reach EpochOxide";
         }
-    }
-
-    function openMenu(name, label) {
-        root.menuScope = name;
-        root.menuLabel = label || name;
-        root.setQuery("");
-    }
-
-    function clearMenu() {
-        root.menuScope = "";
-        root.menuLabel = "";
     }
 
     // A Socket that failed to connect stays dead: reassigning `connected`/`path` on it is a no-op,
@@ -170,20 +163,15 @@ Singleton {
         sendNextRequest();
     }
 
-    // Real (non-menu) queries stream back one batch per provider as each finishes, instead of
+    // Multi-provider queries stream back one batch per provider as each finishes, instead of
     // waiting for the slowest provider (e.g. a large file index) before showing anything.
     function startQuery(providers, q) {
         const limit = q === "" ? 30 : 10;
         const silent = root._silentRefresh;
         root._silentRefresh = false;
         const meta = { providers: providers, query: q, limit: limit, silent: silent };
-        const menuParts = String(providers).split(":");
-        if (menuParts[0] === "menus" && menuParts.length > 1) {
-            enqueueRequest("query", { type: "menu", menu: menuParts[1] }, meta);
-        } else {
-            const providerList = String(providers).split(",").filter(p => p.length > 0);
-            enqueueRequest("query", { type: "query", providers: providerList, query: q, limit: limit, exact: false, stream: providerList.length > 1 }, meta);
-        }
+        const providerList = String(providers).split(",").filter(p => p.length > 0);
+        enqueueRequest("query", { type: "query", providers: providerList, query: q, limit: limit, exact: false, stream: providerList.length > 1 }, meta);
         if (!silent) root.searching = true;
     }
 
@@ -207,10 +195,6 @@ Singleton {
         const raw = query;
         if (raw === ";") {
             resultModel.clear();
-            return;
-        }
-        if (root.menuScope.length > 0) {
-            startQuery("menus:" + root.menuScope, raw.trim());
             return;
         }
         const prefix = root.prefixFor(raw);
@@ -265,18 +249,15 @@ Singleton {
         };
     }
 
-    // Menu sub-queries get a plain item array back (no batching on the server side); filtered
-    // client-side against the typed text since Menu requests carry no query of their own.
+    // A single-provider query comes back as a plain item array rather than per-provider batches.
     function applyQueryResult(data, meta) {
         root.searching = false;
         const items = [];
         try {
             const arr = Array.isArray(data) ? data : [];
-            const needle = meta.providers && String(meta.providers).startsWith("menus:") ? String(meta.query || "").toLowerCase() : "";
             for (const obj of arr) {
                 const item = normalizeItem(obj);
                 if (!item) continue;
-                if (needle.length > 0 && (item.text + " " + item.subtext).toLowerCase().indexOf(needle) === -1) continue;
                 items.push(item);
                 if (items.length >= meta.limit) break;
             }
@@ -333,9 +314,11 @@ Singleton {
         onTriggered: root.runQuery()
     }
 
+    // Generous enough for a provider that has to go and generate its results (a menu whose entries
+    // come from a script), while still catching a backend that has gone quiet.
     Timer {
         id: requestTimeout
-        interval: 1500
+        interval: 3000
         repeat: false
         onTriggered: {
             root._requestQueue = [];
