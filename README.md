@@ -95,7 +95,35 @@ Two prefixes are the shell's own, not the backend's:
 
 Typing a math expression can route to the calculator provider automatically when `calc` is available.
 
+The launcher IPC can jump straight to any provider, which is how the compositor binds open a menu:
+
+```bash
+qs ipc -p ~/.config/epochshell call launcher openProvider keybinds
+qs ipc -p ~/.config/epochshell call launcher openKeybinds   # the same, kept for existing binds
+```
+
 Bitwarden/rbw support is intentionally not included in the current config.
+
+### Custom menus
+
+A menu is a TOML file in EpochOxide's `menus_dir` (`~/.config/epochoxide/menus`), and each one
+becomes a provider named after the menu — searched by prefix, listed in the picker under its own
+name and icon. Entries either run a command on Enter or hand back text to copy, and `command`
+replaces the entry list with a generator that produces them live. See EpochOxide's README for the
+file format; the shell reads whatever the backend reports.
+
+Menus are deployed the same way as everything else here — from the dotfiles repo, not by hand.
+`users/brian/modules/epochshell/` holds the keybinds menu: `menus/keybinds.sh` reads the running
+compositor's binds (niri's `config.kdl`, else `hyprctl binds` cross-referenced against
+`hyprland.lua` so a Lua config's binds still get readable names), wrapped in a derivation that
+carries its own `jq`/`python3`, and a `home.file` entry writes the `keybinds.toml` that points at
+it. The shortcut is one line in the EpochOxide settings:
+
+```nix
+programs.epochshell.epochoxide.settings.query_prefixes = {
+  "?" = "keybinds";
+};
+```
 
 Home Manager installs and starts EpochOxide by default when EpochShell is enabled. The backend can be configured through `programs.epochshell.epochoxide`:
 
