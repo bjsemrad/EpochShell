@@ -122,19 +122,6 @@ Scope {
         function openKeybinds(): string {
             return openProvider("keybinds");
         }
-
-        function providers(): string {
-            return root.ok({
-                providers: S.LauncherService.providerCapabilities.map(cap => ({
-                    name: cap.name,
-                    name_pretty: cap.namePretty,
-                    description: cap.description,
-                    prefixes: cap.prefixes
-                })),
-                connected: S.LauncherService.backendConnected,
-                error: S.LauncherService.backendError
-            });
-        }
     }
 
     IpcHandler {
@@ -154,6 +141,7 @@ Scope {
                 launch_time: String(Quickshell.launchTime),
                 screens: root.screenNames(),
                 panels: S.PopupManager.panelNames,
+                providers: S.LauncherService.availableProviders,
                 backend_connected: S.LauncherService.backendConnected,
                 backend_error: S.LauncherService.backendError
             });

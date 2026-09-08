@@ -232,8 +232,14 @@ Singleton {
 
     function refreshProviders() {
         // While the backend is down requests sit in the queue instead of being written, so don't
-        // stack up a providers refresh per reconnect attempt.
-        if (_requestQueue.some(request => request.kind === "providers")) return;
+        // stack up a providers refresh per reconnect attempt. The queued one still has to be
+        // flushed: the first refresh is requested on component completion, before the socket has
+        // connected, so returning here without a send left the provider list empty until some
+        // other request (the first query the user typed) happened to drain the queue.
+        if (_requestQueue.some(request => request.kind === "providers")) {
+            sendNextRequest();
+            return;
+        }
         enqueueRequest("providers", { type: "providers" });
     }
 
