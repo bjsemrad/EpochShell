@@ -284,6 +284,9 @@ os.replace(tmp, path)
             programs.epochoxide.socket = lib.mkDefault cfg.epochoxide.socket;
             programs.epochoxide.runtimePackages = lib.mkDefault cfg.epochoxide.runtimePackages;
             programs.epochoxide.settings = lib.mkIf (cfg.epochoxide.settings != { }) cfg.epochoxide.settings;
+            systemd.user.services.epochoxide.Unit = lib.mkIf cfg.epochoxide.enableService {
+              X-Restart-Triggers = [ cfg.epochoxide.package ];
+            };
 
             # Autostart uses the HM wrapper so -c is guaranteed
             systemd.user.services.epochshell = lib.mkIf cfg.autostart {
