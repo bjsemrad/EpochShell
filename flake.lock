@@ -1,24 +1,20 @@
 {
   "nodes": {
-    "elephant": {
+    "epochoxide": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
-        ],
-        "systems": "systems"
+        ]
       },
       "locked": {
-        "lastModified": 1784365424,
-        "narHash": "sha256-kJO1Tww/GkvLq5amrV4BKidYGr5YumM+cH/xYALAiw4=",
-        "owner": "abenz1267",
-        "repo": "elephant",
-        "rev": "23f37238367355cf46843015ad5e94706200176a",
-        "type": "github"
+        "lastModified": 1788816317,
+        "narHash": "sha256-kTEpjUaH6rM9JrpqUDWjqTXoTXSGfpnViDl8y99zH5w=",
+        "path": "/home/brian/projects/EpochOxide",
+        "type": "path"
       },
       "original": {
-        "owner": "abenz1267",
-        "repo": "elephant",
-        "type": "github"
+        "path": "/home/brian/projects/EpochOxide",
+        "type": "path"
       }
     },
     "home-manager": {
@@ -77,25 +73,10 @@
     },
     "root": {
       "inputs": {
-        "elephant": "elephant",
+        "epochoxide": "epochoxide",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
         "quickshell": "quickshell"
-      }
-    },
-    "systems": {
-      "locked": {
-        "lastModified": 1689347949,
-        "narHash": "sha256-12tWmuL2zgBgZkdoB6qXZsgJEH9LR3oUgpaQq2RbI80=",
-        "owner": "nix-systems",
-        "repo": "default-linux",
-        "rev": "31732fcf5e8fea42e59c2488ad31a0e651500f68",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default-linux",
-        "type": "github"
       }
     }
   },

@@ -28,7 +28,7 @@ PanelWindow {
     }
 
     readonly property var providerDefs: ({
-        "desktopapplications": { shortcut: "",    label: "Applications", subtext: "Search installed applications" },
+        "apps":                { shortcut: "",    label: "Applications", subtext: "Search installed applications" },
         "files":               { shortcut: "/",   label: "Files",        subtext: "Search and preview files" },
         "clipboard":           { shortcut: ":",   label: "Clipboard",    subtext: "Browse clipboard history" },
         "windows":             { shortcut: "!",   label: "Windows",      subtext: "Jump to open windows" },
@@ -41,6 +41,20 @@ PanelWindow {
         for (const p of S.LauncherService.availableProviders) {
             const d = root.providerDefs[p];
             if (!d) continue;
+            providerModel.append({
+                provider: "provider",
+                identifier: d.shortcut,
+                shortcut: d.shortcut,
+                text: d.label,
+                subtext: d.subtext,
+                icon: "",
+                action: "",
+                preview: "",
+                previewType: ""
+            });
+        }
+        if (S.LauncherService.providerAvailable("menus")) {
+            const d = root.providerDefs["menus:keybinds"];
             providerModel.append({
                 provider: "provider",
                 identifier: d.shortcut,
@@ -172,13 +186,14 @@ PanelWindow {
 
     function providerLabel(name, identifier) {
         if (name === "provider") return identifier || "→";
+        if (name === "menus" && String(identifier).startsWith("keybinds:")) return "kbd";
         const labels = {
-            "desktopapplications": "app",
+            "apps": "app",
             "windows": "win",
             "clipboard": "clip",
             "calc": "calc",
             "files": "file",
-            "menus:keybinds": "kbd"
+            "menus": "menu"
         };
         return labels[name] || name;
     }
@@ -193,7 +208,12 @@ PanelWindow {
     property bool panelAnimate: true
 
     readonly property int previewTextMax: 4000
-    readonly property var imageExtensions: ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "ico", "avif"]
+    // Formats Qt's own imageformats plugins can decode directly on this system.
+    readonly property var nativeImageExtensions: ["png", "jpg", "jpeg", "gif", "bmp", "ico", "svg"]
+    // Formats with no (or unreliable) native Qt decoder here; rendered to a cached PNG via an
+    // external tool instead (see requestThumbnail). Needs poppler-utils/imagemagick on PATH.
+    readonly property var convertibleImageExtensions: ["pdf", "heic", "heif", "webp", "tiff", "tif", "avif", "tga", "icns"]
+    readonly property string previewCacheDir: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/epochshell/previews"
 
     function truncate(text, max) {
         if (typeof text !== "string") return "";
@@ -204,10 +224,44 @@ PanelWindow {
         return Qt.resolvedUrl(path);
     }
 
-    function isImagePath(path) {
+    function fileExtension(path) {
         const idx = path.lastIndexOf(".");
-        if (idx < 0) return false;
-        return imageExtensions.indexOf(path.slice(idx + 1).toLowerCase()) !== -1;
+        return idx < 0 ? "" : path.slice(idx + 1).toLowerCase();
+    }
+
+    function isNativeImagePath(path) {
+        return nativeImageExtensions.indexOf(fileExtension(path)) !== -1;
+    }
+
+    function isConvertibleImagePath(path) {
+        return convertibleImageExtensions.indexOf(fileExtension(path)) !== -1;
+    }
+
+    // Stable per-path cache key (FNV-1a), mirroring EpochOxide's own icon thumbnail stamping.
+    function pathStamp(path) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < path.length; i++) {
+            h ^= path.charCodeAt(i) & 0xff;
+            h = Math.imul(h, 0x01000193);
+        }
+        return (h >>> 0).toString(16).padStart(8, "0");
+    }
+
+    function requestThumbnail(path) {
+        const cache = root.previewCacheDir + "/" + root.pathStamp(path) + ".png";
+        const ext = root.fileExtension(path);
+        const convert = ext === "pdf"
+            ? "pdftoppm -f 1 -l 1 -png -singlefile -scale-to 512 \"$1\" \"${2%.png}\""
+            : "convert \"$1[0]\" -thumbnail 512x512 -background none \"$2\"";
+        previewThumbProc.running = false;
+        previewThumbProc.previewReq = root.previewReqCounter = root.previewReqCounter + 1;
+        previewThumbProc.targetCache = cache;
+        previewThumbProc.command = [
+            "sh", "-c",
+            "mkdir -p \"$(dirname \"$2\")\" && { [ -f \"$2\" ] || " + convert + "; }",
+            "sh", path, cache
+        ];
+        previewThumbProc.running = true;
     }
 
     function refreshPreview() {
@@ -233,9 +287,13 @@ PanelWindow {
             if (provider === "clipboard" || delegate.previewType === "text") {
                 previewText = root.truncate(preview, root.previewTextMax);
                 previewImage = "";
-            } else if (isImagePath(preview)) {
+            } else if (isNativeImagePath(preview)) {
                 previewText = "";
                 previewImage = root.fileUrl(preview);
+            } else if (isConvertibleImagePath(preview)) {
+                previewText = "";
+                previewImage = "";
+                root.requestThumbnail(preview);
             } else {
                 previewText = "";
                 previewImage = "";
@@ -284,6 +342,16 @@ PanelWindow {
         }
     }
 
+    Process {
+        id: previewThumbProc
+        property int previewReq: -1
+        property string targetCache: ""
+        onExited: function (exitCode, exitStatus) {
+            if (previewThumbProc.previewReq !== root.previewReqCounter) return;
+            if (exitCode === 0) root.previewImage = root.fileUrl(previewThumbProc.targetCache);
+        }
+    }
+
     onCurrentIndexChanged: previewTimer.restart()
 
     Keys.onEscapePressed: event => {
@@ -301,14 +369,12 @@ PanelWindow {
         readonly property string modeProvider: root.activeProvider()
 
         width: modeProvider === "files" || modeProvider === "clipboard"
-            ? Math.round(root.width * (modeProvider === "files" ? 0.60 : 0.40))
+            ? Math.round(root.width * 0.60)
             : root.previewVisible ? 1700 : 620
         Behavior on width { enabled: root.panelAnimate; NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
-        height: modeProvider === "files"
+        height: modeProvider === "files" || modeProvider === "clipboard"
             ? Math.round(root.height * 0.60)
-            : modeProvider === "clipboard"
-                ? Math.round(root.height * 0.40)
-                : (root.previewProvider === "files" || root.previewProvider === "clipboard") && root.previewText.length > 0 ? 900 : 520
+            : (root.previewProvider === "files" || root.previewProvider === "clipboard") && root.previewText.length > 0 ? 900 : 520
         Behavior on height { enabled: root.panelAnimate; NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
         radius: T.Config.popupRadius
         color: T.Config.background
@@ -539,16 +605,18 @@ PanelWindow {
                                     font.pixelSize: T.Config.fontSizeMedium
                                     font.bold: delegateRoot.isCurrent
                                     elide: Text.ElideRight
+                                    maximumLineCount: 1
                                 }
 
                                 Text {
                                     Layout.fillWidth: true
                                     visible: text.length > 0
-                                    text: delegateRoot.subtext
+                                    text: delegateRoot.provider === "clipboard" ? delegateRoot.subtext.replace(/\s+/g, " ") : delegateRoot.subtext
                                     color: T.Config.inactive
                                     font.family: T.Config.fontFamily
                                     font.pixelSize: T.Config.fontSizeNormal
                                     elide: Text.ElideRight
+                                    maximumLineCount: 1
                                 }
                             }
 

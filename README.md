@@ -7,7 +7,7 @@ The project is intentionally pragmatic: it keeps only the pieces used by the cur
 ## Features
 
 - Top bar with workspace indicators, launcher, media indicator, clock, weather, network, Bluetooth, volume, Tailscale, battery, notifications, system tray items, and system menu.
-- Custom launcher backed by `elephant` for applications, files, clipboard, windows, and calculator results.
+- Custom launcher backed by `epochoxide` for applications, files, clipboard, windows, and calculator results.
 - Notification daemon UI with notification history and do-not-disturb support.
 - Sound, media, and brightness OSDs.
 - Network, Bluetooth, audio, battery, weather, calendar, media, notification, and system popups.
@@ -62,7 +62,7 @@ quickshell -p /home/brian/projects/EpochShell/quickshell -vv --log-rules 'qt.tex
 
 ## Launcher
 
-The launcher is implemented in `quickshell/modules/LauncherOverlay.qml` and uses `quickshell/services/LauncherService.qml` to query `elephant`.
+The launcher is implemented in `quickshell/modules/LauncherOverlay.qml` and uses `quickshell/services/LauncherService.qml` to query EpochOxide over `$XDG_RUNTIME_DIR/epochoxide.sock`.
 
 Open/toggle is wired through the launcher icon on the bar and the launcher IPC target:
 
@@ -83,13 +83,34 @@ Provider prefixes:
 
 Typing a math expression can route to the calculator provider automatically when `calc` is available.
 
-Bitwarden/rbw support is intentionally not included in the current config. Elephant currently panics on some zero-result responses, so Epoch Shell suppresses the known `panic: unexpected end of JSON input` stderr noise and treats it as an empty result set.
+Bitwarden/rbw support is intentionally not included in the current config.
+
+Home Manager installs and starts EpochOxide by default when EpochShell is enabled. The backend can be configured through `programs.epochshell.epochoxide`:
+
+```nix
+programs.epochshell = {
+  enable = true;
+
+  epochoxide = {
+    enable = true;
+    enableService = true;
+    socket = "%t/epochoxide.sock";
+    runtimePackages = with pkgs; [ wl-clipboard xclip xdg-utils wmctrl tesseract libqalculate imagemagick librsvg fd ];
+    settings = {
+      file_roots = [ "~" ];
+      persistent_index = true;
+      provider_enabled.files = true;
+      provider_enabled.clipboard = true;
+    };
+  };
+};
+```
 
 Launcher sizing:
 
 - Normal mode: fixed launcher panel size from the QML defaults.
 - Files mode (`/`): `60%` screen width by `60%` screen height.
-- Clipboard mode (`:`): `40%` screen width by `40%` screen height.
+- Clipboard mode (`:`): `60%` screen width by `60%` screen height.
 - Preview pane width scales relative to the current panel width.
 
 ## Polkit
@@ -292,7 +313,7 @@ volumeSliderSpacing = 10
 Epoch Shell expects these tools/services to be available in the session:
 
 - `quickshell`
-- `elephant` for launcher results and activation
+- `epochoxide` for launcher results and activation
 - `hyprlock` for the lock action
 - `wpctl`/PipeWire stack for audio controls
 - `networkmanager` stack for network controls

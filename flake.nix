@@ -14,8 +14,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    elephant = {
-      url = "github:abenz1267/elephant"; # "v2.22.0";
+    epochoxide = {
+      url = "path:/home/brian/projects/EpochOxide";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -26,7 +26,7 @@
       nixpkgs,
       quickshell,
       home-manager,
-      elephant,
+      epochoxide,
       ...
     }:
     let
@@ -60,7 +60,7 @@
         {
           quickshell = qs;
           epochshell = epochshell;
-          elephant = elephant.packages.${system}.elephant-with-providers;
+          epochoxide = epochoxide.packages.${system}.default;
           default = epochshell;
         }
       );
@@ -90,11 +90,22 @@
           # From your flake packages
           epochPkg = self.packages.${pkgs.stdenv.hostPlatform.system}.epochshell;
           qsPkg = self.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
+          epochoxidePkg = epochoxide.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+          # Tools the launcher's file-preview pane shells out to for formats Qt can't decode
+          # natively here (no HEIF plugin in nixpkgs' qtimageformats; qtimageformats itself isn't
+          # on quickshell's wrapped plugin path, so even webp/tiff/avif need a fallback).
+          defaultRuntimePackages = pkgs: with pkgs; [
+            poppler-utils # pdftoppm — PDF preview thumbnails
+            imagemagick # convert — general raster preview thumbnails (HEIC/HEIF included)
+          ];
+          runtimePath = lib.makeBinPath cfg.runtimePackages;
 
           # HM-generated wrapper that ALWAYS sets -c <user config dir>
           epochRun = pkgs.writeShellScriptBin "epochshell" ''
             set -euo pipefail
 
+            export PATH="${runtimePath}:$PATH"
             CONFIG_HOME="''${XDG_CONFIG_HOME:-''${HOME}/.config}"
             CONFIG_DIR="$CONFIG_HOME/${cfg.configDir}"
 
@@ -102,7 +113,7 @@
           '';
         in
         {
-          imports = [ elephant.homeManagerModules.default ];
+          imports = [ epochoxide.homeManagerModules.default ];
 
           options.programs.epochshell = {
             enable = lib.mkEnableOption "EpochShell (runs Quickshell)";
@@ -117,6 +128,12 @@
               type = lib.types.bool;
               default = true;
               description = "Start EpochShell (quickshell) via systemd --user.";
+            };
+
+            runtimePackages = lib.mkOption {
+              type = lib.types.listOf lib.types.package;
+              default = defaultRuntimePackages pkgs;
+              description = "Runtime tools made available to the shell process (e.g. launcher file-preview thumbnailers).";
             };
 
             homeAssistant = lib.mkOption {
@@ -147,56 +164,58 @@
               description = "Home Assistant panel configuration.";
             };
 
-            elephant = lib.mkOption {
+            epochoxide = lib.mkOption {
               type = lib.types.submodule {
                 options = {
                   enable = lib.mkOption {
                     type = lib.types.bool;
                     default = true;
-                    description = "Install and start the elephant launcher backend (systemd user service).";
+                    description = "Install and start the EpochOxide launcher backend (systemd user service).";
                   };
 
-                  installService = lib.mkOption {
+                  enableService = lib.mkOption {
                     type = lib.types.bool;
                     default = true;
-                    description = "Create a systemd user service for elephant.";
+                    description = "Create a systemd user service for EpochOxide.";
                   };
 
-                  debug = lib.mkOption {
-                    type = lib.types.bool;
-                    default = false;
-                    description = "Enable debug logging for the elephant service.";
+                  package = lib.mkOption {
+                    type = lib.types.package;
+                    default = epochoxidePkg;
+                    description = "EpochOxide package to install and run.";
+                  };
+
+                  socket = lib.mkOption {
+                    type = lib.types.str;
+                    default = "%t/epochoxide.sock";
+                    description = "EpochOxide socket path for the user service. %t expands to XDG_RUNTIME_DIR.";
+                  };
+
+                  runtimePackages = lib.mkOption {
+                    type = lib.types.listOf lib.types.package;
+                    default = with pkgs; [
+                      wl-clipboard
+                      xclip
+                      xdg-utils
+                      wmctrl
+                      tesseract
+                      libqalculate
+                      imagemagick
+                      librsvg
+                      fd
+                    ];
+                    description = "Runtime tools made available to EpochOxide providers.";
                   };
 
                   settings = lib.mkOption {
                     type = (pkgs.formats.toml { }).type;
                     default = { };
-                    description = "elephant.toml settings. Run `elephant generatedoc` to view available options.";
-                  };
-
-                  providers = lib.mkOption {
-                    type = lib.types.listOf lib.types.str;
-                    default = [ ];
-                    description = "List of built-in providers to install. Defaults to elephant's built-in set when empty.";
-                  };
-
-                  provider = lib.mkOption {
-                    type = lib.types.attrsOf (
-                      lib.types.submodule {
-                        options.settings = lib.mkOption {
-                          type = (pkgs.formats.toml { }).type;
-                          default = { };
-                          description = "Provider-specific TOML settings.";
-                        };
-                      }
-                    );
-                    default = { };
-                    description = "Per-provider settings forwarded to XDG config.";
+                    description = "EpochOxide config.toml settings.";
                   };
                 };
               };
               default = { };
-              description = "Elephant launcher backend shipped with EpochShell.";
+              description = "EpochOxide launcher backend shipped with EpochShell.";
             };
           };
 
@@ -258,21 +277,13 @@ os.replace(tmp, path)
               ''
             );
 
-            # Elephant backend (launcher data providers) + its systemd user service
-            programs.elephant.enable = lib.mkDefault cfg.elephant.enable;
-            programs.elephant.debug = lib.mkDefault cfg.elephant.debug;
-            programs.elephant.settings = lib.mkIf (cfg.elephant.settings != { }) cfg.elephant.settings;
-            programs.elephant.providers = lib.mkIf (cfg.elephant.providers != [ ]) cfg.elephant.providers;
-            # Ship the keybinds menu (hypr + niri providers) with the shell
-            programs.elephant.provider = cfg.elephant.provider
-              // {
-                menus = (cfg.elephant.provider.menus or { })
-                  // {
-                    lua = (cfg.elephant.provider.menus.lua or { })
-                      // { keybinds = builtins.readFile "${self}/quickshell/menus/keybinds.lua"; };
-                  };
-              };
-            programs.elephant.installService = lib.mkDefault cfg.elephant.installService;
+            # EpochOxide backend (launcher data providers) + its systemd user service
+            programs.epochoxide.enable = lib.mkDefault cfg.epochoxide.enable;
+            programs.epochoxide.enableService = lib.mkDefault cfg.epochoxide.enableService;
+            programs.epochoxide.package = lib.mkDefault cfg.epochoxide.package;
+            programs.epochoxide.socket = lib.mkDefault cfg.epochoxide.socket;
+            programs.epochoxide.runtimePackages = lib.mkDefault cfg.epochoxide.runtimePackages;
+            programs.epochoxide.settings = lib.mkIf (cfg.epochoxide.settings != { }) cfg.epochoxide.settings;
 
             # Autostart uses the HM wrapper so -c is guaranteed
             systemd.user.services.epochshell = lib.mkIf cfg.autostart {
