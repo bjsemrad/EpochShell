@@ -259,6 +259,7 @@ PanelWindow {
 
     function refreshPreview() {
         previewTimer.stop();
+        previewReqCounter++;
         if (!_visible) {
             previewVisible = false;
             return;
@@ -270,8 +271,8 @@ PanelWindow {
             previewImage = "";
             return;
         }
-        const provider = row.provider;
-        const preview = row.preview;
+        const provider = String(row.provider || "");
+        const preview = String(row.preview || "");
         if ((provider === "files" || provider === "clipboard") && preview.length > 0) {
             previewVisible = true;
             previewProvider = provider;
@@ -909,6 +910,20 @@ PanelWindow {
         function onProvidersUpdated() {
             root.buildProviderMenu();
             root.applyPendingProvider();
+        }
+        function onResultsUpdated() {
+            if (!root._visible || root.showingProviders) return;
+            if (listView.count === 0) {
+                root.previewVisible = false;
+                root.currentIndex = -1;
+                listView.currentIndex = -1;
+            } else if (root.currentIndex < 0 || root.currentIndex >= listView.count) {
+                root.currentIndex = 0;
+                listView.currentIndex = 0;
+                previewTimer.restart();
+            } else {
+                previewTimer.restart();
+            }
         }
     }
 

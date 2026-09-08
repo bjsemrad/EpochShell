@@ -32,6 +32,7 @@ Singleton {
     property var _streamBatches: ({})
 
     signal providersUpdated()
+    signal resultsUpdated()
 
     ListModel {
         id: resultModel
@@ -183,11 +184,13 @@ Singleton {
         searching = false;
         resultModel.clear();
         for (const it of _defaultAppsCache) resultModel.append(it);
+        root.resultsUpdated();
     }
 
     function applyResults(items) {
         resultModel.clear();
         for (const it of items) resultModel.append(it);
+        root.resultsUpdated();
     }
 
     function runQuery() {
@@ -195,6 +198,7 @@ Singleton {
         const raw = query;
         if (raw === ";") {
             resultModel.clear();
+            root.resultsUpdated();
             return;
         }
         const prefix = root.prefixFor(raw);
