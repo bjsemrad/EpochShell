@@ -21,8 +21,9 @@ HoverPopupWindow {
         }
     }
 
+    Component.onDestruction: S.PopupManager.unregister(bluetoothPopup)
     Component.onCompleted: {
-        S.PopupManager.register(bluetoothPopup)
+        S.PopupManager.register(bluetoothPopup, "bluetooth")
     }
 
     BluetoothOnOff {}

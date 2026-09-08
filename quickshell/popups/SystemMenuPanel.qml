@@ -27,7 +27,8 @@ HoverPopupWindow {
         }
     }
 
-    Component.onCompleted: S.PopupManager.register(systemMenuPopup)
+    Component.onDestruction: S.PopupManager.unregister(systemMenuPopup)
+    Component.onCompleted: S.PopupManager.register(systemMenuPopup, "system")
 
     onVisibleChanged: {
         if (visible) {

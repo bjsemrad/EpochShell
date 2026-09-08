@@ -37,8 +37,9 @@ HoverPopupWindow {
         }
     }
 
+    Component.onDestruction: S.PopupManager.unregister(networkPopup)
     Component.onCompleted: {
-        S.PopupManager.register(networkPopup)
+        S.PopupManager.register(networkPopup, "ethernet")
     }
 
     EthernetHeader {}

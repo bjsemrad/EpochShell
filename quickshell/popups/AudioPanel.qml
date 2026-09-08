@@ -41,8 +41,9 @@ HoverPopupWindow {
         }
     }
 
+    Component.onDestruction: S.PopupManager.unregister(audioPopup)
     Component.onCompleted: {
-        S.PopupManager.register(audioPopup)
+        S.PopupManager.register(audioPopup, "audio")
     }
 }
 

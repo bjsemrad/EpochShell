@@ -18,7 +18,8 @@ HoverPopupWindow {
         }
     }
 
-    Component.onCompleted: S.PopupManager.register(homeAssistantPopup)
+    Component.onDestruction: S.PopupManager.unregister(homeAssistantPopup)
+    Component.onCompleted: S.PopupManager.register(homeAssistantPopup, "homeassistant")
 
     RowLayout {
         Layout.fillWidth: true

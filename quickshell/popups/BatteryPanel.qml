@@ -42,8 +42,9 @@ HoverPopupWindow {
         }
     }
 
+    Component.onDestruction: S.PopupManager.unregister(batteryPopup)
     Component.onCompleted: {
-        S.PopupManager.register(batteryPopup)
+        S.PopupManager.register(batteryPopup, "battery")
     }
 }
 

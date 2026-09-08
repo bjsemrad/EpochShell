@@ -20,7 +20,8 @@ HoverPopupWindow {
         }
     }
 
-    Component.onCompleted: S.PopupManager.register(notificationPopup)
+    Component.onDestruction: S.PopupManager.unregister(notificationPopup)
+    Component.onCompleted: S.PopupManager.register(notificationPopup, "notifications")
 
     RowLayout {
         Layout.fillWidth: true

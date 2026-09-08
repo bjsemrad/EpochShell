@@ -47,7 +47,8 @@ PopupWindow {
         }
     }
 
-    Component.onCompleted: S.PopupManager.register(popup)
+    Component.onDestruction: S.PopupManager.unregister(popup)
+    Component.onCompleted: S.PopupManager.register(popup, "media")
 
     anchor {
         item: trigger

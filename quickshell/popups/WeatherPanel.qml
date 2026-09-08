@@ -24,8 +24,9 @@ HoverPopupWindow {
         popupHover = false;
     }
 
+    Component.onDestruction: S.PopupManager.unregister(popup)
     Component.onCompleted: {
-        S.PopupManager.register(popup);
+        S.PopupManager.register(popup, "weather");
     }
 
     onVisibleChanged: {

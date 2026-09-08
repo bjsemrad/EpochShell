@@ -96,16 +96,11 @@ PanelWindow {
         }
     }
 
-    IpcHandler {
-        target: "launcher"
-        property bool isOpen: root._visible
-
-        function toggle(): void { root.toggle(); }
-        function open(): void { root.open(); }
-        function close(): void { root.close(); }
-        function openProvider(name: string): void { root.openProvider(name); }
-        function openKeybinds(): void { root.openProvider("keybinds"); }
-    }
+    // The overlay is instantiated once by the shell root and published here so the per-screen bar
+    // icons and the "launcher" IPC target both drive the same window. It used to live inside
+    // ApplicationLauncher, which Bar.qml builds per screen, so a second monitor meant a second
+    // overlay competing for the same IPC target and the same Quickshell.screens[0] output.
+    Component.onDestruction: S.PopupManager.registerLauncher(null)
 
     function chooseProvider(prefix) {
         showingProviders = false;
@@ -929,5 +924,6 @@ PanelWindow {
 
     Component.onCompleted: {
         root.buildProviderMenu()
+        S.PopupManager.registerLauncher(root)
     }
 }

@@ -6,6 +6,7 @@
 
 import Quickshell
 import Quickshell.Wayland
+import qs.modules
 
 ShellRoot {
     Bar {}
@@ -14,4 +15,10 @@ ShellRoot {
     MediaOSD {}
     BrightnessOSD {}
     Polkit {}
+
+    // One launcher for the session, not one per bar. Bar.qml builds its contents under
+    // Variants { model: Quickshell.screens }, so the overlay used to be duplicated per screen.
+    LauncherOverlay {}
+
+    Ipc {}
 }

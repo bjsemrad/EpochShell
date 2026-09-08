@@ -26,8 +26,9 @@ HoverPopupWindow {
         }
     }
 
+    Component.onDestruction: S.PopupManager.unregister(tailscalePopup)
     Component.onCompleted: {
-        S.PopupManager.register(tailscalePopup)
+        S.PopupManager.register(tailscalePopup, "tailscale")
     }
 
     TailscaleOnOff {}

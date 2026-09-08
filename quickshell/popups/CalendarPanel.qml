@@ -59,8 +59,9 @@ HoverPopupWindow {
         viewMonth = today.getMonth();
     }
 
+    Component.onDestruction: S.PopupManager.unregister(popup)
     Component.onCompleted: {
-        S.PopupManager.register(popup);
+        S.PopupManager.register(popup, "calendar");
     }
 
     onVisibleChanged: {
