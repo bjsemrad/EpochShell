@@ -7,14 +7,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1788885353,
-        "narHash": "sha256-E6qpc6M+VuVZnCYxzxHPUwZ+SrivldQWrv2UVNH4TD8=",
-        "path": "/home/brian/projects/EpochOxide",
-        "type": "path"
+        "lastModified": 1788886628,
+        "narHash": "sha256-025mXwI65pjXNs+DAe8oQqIahXPw16VfCQo8FxrDvMc=",
+        "owner": "bjsemrad",
+        "repo": "epochoxide",
+        "rev": "8097bab29a7717f1e21d9165ada450a7d15d2ccb",
+        "type": "github"
       },
       "original": {
-        "path": "/home/brian/projects/EpochOxide",
-        "type": "path"
+        "owner": "bjsemrad",
+        "repo": "epochoxide",
+        "type": "github"
       }
     },
     "home-manager": {

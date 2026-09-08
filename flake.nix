@@ -15,7 +15,7 @@
     };
 
     epochoxide = {
-      url = "path:/home/brian/projects/EpochOxide";
+      url = "github:bjsemrad/epochoxide";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
