@@ -12,9 +12,11 @@ Singleton {
     readonly property string socketPath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/epochoxide.sock"
     readonly property string defaultProviders: "apps,windows,clipboard,calc,files"
     readonly property var providersByPrefix: ({
+        ">": "runner",
         "/": "files",
         ":": "clipboard",
         "!": "windows",
+        "@": "windows",
         "=": "calc",
         "?": "menus:keybinds",
         "*": defaultProviders
