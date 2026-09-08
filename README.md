@@ -70,16 +70,25 @@ Open/toggle is wired through the launcher icon on the bar and the launcher IPC t
 quickshell ipc call launcher toggle
 ```
 
-Provider prefixes:
+Provider prefixes come from EpochOxide itself: the launcher reads the `providers` response and
+routes on the `prefixes` each provider reports (configured under `[query_prefixes]` in the
+EpochOxide config), so the shell never hardcodes them. With the EpochOxide defaults that is:
 
 | Prefix | Provider |
 |--------|----------|
 | `/` | Files |
-| `:` | Clipboard |
-| `!` | Windows |
-| `=` | Calculator |
-| `*` | All configured default providers |
-| `;` | Provider picker |
+| `>` | Runner |
+| `#` | Clipboard |
+| `@` | Windows |
+| `?` | Calculator |
+| `:` | Menus |
+
+Two prefixes are the shell's own, not the backend's:
+
+| Prefix | Meaning |
+|--------|---------|
+| `*` | All available providers |
+| `;` | Provider picker (lists every live provider with its prefix) |
 
 Typing a math expression can route to the calculator provider automatically when `calc` is available.
 

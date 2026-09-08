@@ -22,62 +22,36 @@ PanelWindow {
     property int currentIndex: -1
     property bool _visible: false
     property bool showingProviders: false
+    readonly property bool backendDown: S.LauncherService.backendError.length > 0
 
     ListModel {
         id: providerModel
     }
 
-    readonly property var providerDefs: ({
-        "apps":                { shortcut: "",    label: "Applications", subtext: "Search installed applications" },
-        "files":               { shortcut: "/",   label: "Files",        subtext: "Search and preview files" },
-        "clipboard":           { shortcut: ":",   label: "Clipboard",    subtext: "Browse clipboard history" },
-        "windows":             { shortcut: "!",   label: "Windows",      subtext: "Jump to open windows" },
-        "calc":                { shortcut: "=",   label: "Calculator",   subtext: "Evaluate math expressions" },
-        "menus:keybinds":      { shortcut: "?",   label: "Keybinds",     subtext: "Search active keyboard shortcuts" }
-    })
-
-    function buildProviderMenu() {
-        providerModel.clear();
-        for (const p of S.LauncherService.availableProviders) {
-            const d = root.providerDefs[p];
-            if (!d) continue;
-            providerModel.append({
-                provider: "provider",
-                identifier: d.shortcut,
-                shortcut: d.shortcut,
-                text: d.label,
-                subtext: d.subtext,
-                icon: "",
-                action: "",
-                preview: "",
-                previewType: ""
-            });
-        }
-        if (S.LauncherService.providerAvailable("menus")) {
-            const d = root.providerDefs["menus:keybinds"];
-            providerModel.append({
-                provider: "provider",
-                identifier: d.shortcut,
-                shortcut: d.shortcut,
-                text: d.label,
-                subtext: d.subtext,
-                icon: "",
-                action: "",
-                preview: "",
-                previewType: ""
-            });
-        }
+    function appendProviderRow(name, prefix, text, subtext) {
         providerModel.append({
             provider: "provider",
-            identifier: "*",
-            shortcut: "*",
-            text: "All providers",
-            subtext: "Search across every provider",
+            name: name,
+            identifier: prefix,
+            text: text,
+            subtext: subtext,
             icon: "",
             action: "",
             preview: "",
             previewType: ""
         });
+    }
+
+    // Mirrors whatever EpochOxide reports: one row per live provider, labelled and prefixed the
+    // way the backend describes itself, plus the synthetic "search everything" row.
+    function buildProviderMenu() {
+        providerModel.clear();
+        for (const cap of S.LauncherService.providerCapabilities) {
+            if (!cap.supportsQuery) continue;
+            const prefix = cap.prefixes.length > 0 ? cap.prefixes[0] : "";
+            root.appendProviderRow(cap.name, prefix, cap.namePretty, cap.description);
+        }
+        root.appendProviderRow(S.LauncherService.allPrefix, S.LauncherService.allPrefix, "All providers", "Search across every provider");
     }
 
     visible: _visible
@@ -86,6 +60,7 @@ PanelWindow {
         panelAnimate = false;
         inputField.text = "";
         showingProviders = false;
+        S.LauncherService.clearMenu();
         currentIndex = -1;
         previewVisible = false;
         previewText = "";
@@ -110,6 +85,7 @@ PanelWindow {
         _visible = false;
         inputField.text = "";
         showingProviders = false;
+        S.LauncherService.clearMenu();
         currentIndex = -1;
         listView.currentIndex = -1;
     }
@@ -131,18 +107,23 @@ PanelWindow {
         function close(): void { root.close(); }
         function openKeybinds(): void {
             root.open();
-            inputField.text = "?";
-            S.LauncherService.setQuery("?");
-            inputField.forceActiveFocus();
+            root.openMenu("keybinds", "Keybinds");
         }
     }
 
     function chooseProvider(prefix) {
         showingProviders = false;
-        if (prefix === "default") prefix = "";
+        S.LauncherService.clearMenu();
         inputField.text = prefix;
         inputField.forceActiveFocus();
         S.LauncherService.setQuery(inputField.text);
+    }
+
+    function openMenu(name, label) {
+        showingProviders = false;
+        inputField.text = "";
+        S.LauncherService.openMenu(name, label);
+        inputField.forceActiveFocus();
     }
 
     function activateCurrent() {
@@ -153,49 +134,54 @@ PanelWindow {
             root.chooseProvider(delegate.identifier);
             return;
         }
+        // A menus-provider result is the menu itself; drill into it instead of activating it.
+        if (delegate.provider === "menus" && String(delegate.identifier).startsWith("menus:")) {
+            root.openMenu(String(delegate.identifier).slice(6), delegate.text);
+            return;
+        }
         S.LauncherService.activate(delegate.provider, delegate.identifier, delegate.action);
         close();
     }
 
+    function defaultScope() {
+        return S.LauncherService.providerAvailable("apps") ? "apps" : "";
+    }
+
+    function scopedProvider() {
+        if (S.LauncherService.menuScope.length > 0) return "menus";
+        const prefix = S.LauncherService.prefixFor(inputField.text);
+        if (prefix.length > 0) return prefix === S.LauncherService.allPrefix ? "" : S.LauncherService.providerForPrefix(prefix);
+        if (S.LauncherService.providerAvailable("calc") && S.LauncherService.isMathQuery(inputField.text)) return "calc";
+        return root.defaultScope();
+    }
+
     function scopeLabel() {
         if (root.showingProviders) return "Choose provider";
-        if (S.LauncherService.isMathQuery(inputField.text)) return "Calculator";
-        const p = inputField.text.length > 0 ? inputField.text[0] : "";
-        for (let i = 0; i < providerModel.count; i++) {
-            const row = providerModel.get(i);
-            if (row.identifier === p) return row.text;
-        }
-        return "Applications";
+        if (S.LauncherService.menuScope.length > 0) return S.LauncherService.menuLabel;
+        if (S.LauncherService.prefixFor(inputField.text) === S.LauncherService.allPrefix) return "All providers";
+        const provider = root.scopedProvider();
+        return provider.length > 0 ? S.LauncherService.prettyName(provider) : "All providers";
     }
 
     function activeProvider() {
         if (root.showingProviders) return "";
-        const p = inputField.text.length > 0 ? inputField.text[0] : "";
-        const provider = S.LauncherService.providerForPrefix(p);
+        const provider = root.scopedProvider();
         return provider.indexOf(",") === -1 ? provider : "";
     }
 
-    function chipActive(prefix) {
-        if (root.showingProviders) return false;
-        if (S.LauncherService.providerAvailable("calc") && S.LauncherService.isMathQuery(inputField.text)) return prefix === "=";
-        const p = inputField.text.length > 0 ? inputField.text[0] : "";
-        const provider = S.LauncherService.providerForPrefix(p);
-        if (prefix === "default") return p.length === 0 || provider.length === 0;
-        return p === prefix && S.LauncherService.providerForPrefix(prefix).length > 0;
+    function chipActive(name, prefix) {
+        if (root.showingProviders || S.LauncherService.menuScope.length > 0) return false;
+        const typed = S.LauncherService.prefixFor(inputField.text);
+        if (typed.length > 0) return typed === prefix;
+        return name === root.scopedProvider();
     }
 
     function providerLabel(name, identifier) {
         if (name === "provider") return identifier || "→";
-        if (name === "menus" && String(identifier).startsWith("keybinds:")) return "kbd";
-        const labels = {
-            "apps": "app",
-            "windows": "win",
-            "clipboard": "clip",
-            "calc": "calc",
-            "files": "file",
-            "menus": "menu"
-        };
-        return labels[name] || name;
+        const id = String(identifier || "");
+        // Menu entries are identified as "<menu>:<index>"; label them with the menu they came from.
+        if (name === "menus" && !id.startsWith("menus:") && id.indexOf(":") > 0) return id.slice(0, id.indexOf(":"));
+        return name;
     }
 
     property bool previewVisible: false
@@ -456,6 +442,13 @@ PanelWindow {
                             root.close();
                             event.accepted = true;
                         }
+                        Keys.onPressed: event => {
+                            if (event.key === Qt.Key_Backspace && inputField.text.length === 0 && S.LauncherService.menuScope.length > 0) {
+                                S.LauncherService.clearMenu();
+                                S.LauncherService.setQuery("");
+                                event.accepted = true;
+                            }
+                        }
 
                         onTextChanged: {
                             showingProviders = text === ";";
@@ -542,7 +535,6 @@ PanelWindow {
                         required property string action
                         required property string preview
                         required property string previewType
-                        property string shortcut: ""
 
                         readonly property bool isCurrent: root.currentIndex === index
                         width: listView.width - 2
@@ -585,7 +577,7 @@ PanelWindow {
                                     anchors.centerIn: parent
                                     visible: !(delegateRoot.provider !== "provider" && delegateRoot.icon.length > 0 && iconImage.status === Image.Ready)
                                     text: delegateRoot.provider === "provider"
-                                        ? (delegateRoot.shortcut || (delegateRoot.identifier.length > 0 ? delegateRoot.identifier.charAt(0) : "A"))
+                                        ? (delegateRoot.identifier.length > 0 ? delegateRoot.identifier.charAt(0) : delegateRoot.text.charAt(0).toUpperCase())
                                         : (delegateRoot.text.length > 0 ? delegateRoot.text.charAt(0).toUpperCase() : "?")
                                     color: T.Config.inactive
                                     font.family: T.Config.fontFamily
@@ -632,7 +624,7 @@ PanelWindow {
                                 Text {
                                     id: kbdText
                                     anchors.centerIn: parent
-                                    text: delegateRoot.shortcut || "type"
+                                    text: delegateRoot.identifier.length > 0 ? delegateRoot.identifier : "type"
                                     color: T.Config.inactive
                                     font.family: T.Config.fontFamily
                                     font.pixelSize: T.Config.fontSizeSubtext
@@ -679,11 +671,52 @@ PanelWindow {
 
                 Text {
                     anchors.centerIn: listView
-                    visible: listView.count === 0 && !S.LauncherService.searching
+                    visible: listView.count === 0 && !S.LauncherService.searching && !root.backendDown
                     text: "No results"
                     color: T.Config.inactive
                     font.family: T.Config.fontFamily
                     font.pixelSize: T.Config.fontSizeNormal
+                }
+
+                ColumnLayout {
+                    anchors.centerIn: listView
+                    width: listView.width - T.Config.popupPadding * 2
+                    visible: root.backendDown
+                    spacing: 6
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "󰅚"
+                        color: T.Config.red
+                        font.family: T.Config.fontFamily
+                        font.pixelSize: 48
+                    }
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: S.LauncherService.backendError
+                        color: T.Config.red
+                        font.family: T.Config.fontFamily
+                        font.pixelSize: T.Config.fontSizeLarge
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: S.LauncherService.socketPath
+                        color: T.Config.inactive
+                        font.family: T.Config.fontFamily
+                        font.pixelSize: T.Config.fontSizeNormal
+                        elide: Text.ElideMiddle
+                    }
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "Retrying… · systemctl --user restart epochoxide"
+                        color: T.Config.inactive
+                        font.family: T.Config.fontFamily
+                        font.pixelSize: T.Config.fontSizeSubtext
+                    }
                 }
             }
 
@@ -692,8 +725,9 @@ PanelWindow {
                 spacing: 6
 
                 Text {
-                    text: root.scopeLabel() + " · " + S.LauncherService.results.count + " results"
-                    color: S.LauncherService.searching ? T.Config.accent : T.Config.inactive
+                    text: root.backendDown ? S.LauncherService.backendError : root.scopeLabel() + " · " + listView.count + " results"
+                    color: root.backendDown ? T.Config.red
+                           : S.LauncherService.searching ? T.Config.accent : T.Config.inactive
                     font.family: T.Config.fontFamily
                     font.pixelSize: T.Config.fontSizeSubtext
                 }
@@ -707,9 +741,10 @@ PanelWindow {
 
                     delegate: Text {
                         required property string identifier
+                        required property string name
 
-                        text: (identifier === "default" || identifier === "") ? "Apps" : identifier
-                        color: root.chipActive(identifier) ? T.Config.accent : T.Config.inactive
+                        text: identifier.length > 0 ? identifier : name
+                        color: root.chipActive(name, identifier) ? T.Config.accent : T.Config.inactive
                         font.family: T.Config.fontFamily
                         font.pixelSize: T.Config.fontSizeSubtext
                         MouseArea {

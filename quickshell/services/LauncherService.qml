@@ -10,19 +10,18 @@ Singleton {
     property alias results: resultModel
 
     readonly property string socketPath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/epochoxide.sock"
-    readonly property string defaultProviders: "apps,windows,clipboard,calc,files"
-    readonly property var providersByPrefix: ({
-        ">": "runner",
-        "/": "files",
-        ":": "clipboard",
-        "!": "windows",
-        "@": "windows",
-        "=": "calc",
-        "?": "menus:keybinds",
-        "*": defaultProviders
-    })
+    readonly property string allPrefix: "*"
     property bool searching: false
+    // Everything below is filled in from EpochOxide's `providers` response; nothing about the
+    // provider set or its query prefixes is known ahead of time.
+    property var providerCapabilities: []
     property var availableProviders: []
+    property var providersByPrefix: ({})
+    readonly property string defaultProviders: availableProviders.join(",")
+    property string menuScope: ""
+    property string menuLabel: ""
+    readonly property bool backendConnected: socketLoader.item !== null && socketLoader.item.connected
+    property string backendError: ""
     property bool _providersLoaded: false
 
     readonly property int defaultAppsTTL: 600000
@@ -65,18 +64,100 @@ Singleton {
     }
 
     function providerForPrefix(prefix) {
-        if (!(prefix in providersByPrefix)) return "";
-        const providers = providersByPrefix[prefix];
-        return prefix === "*" ? root.enabledProviders(providers) : providers;
+        if (prefix in providersByPrefix) return providersByPrefix[prefix];
+        return prefix === root.allPrefix ? root.enabledProviders(root.defaultProviders) : "";
+    }
+
+    // Longest match wins, mirroring EpochOxide's own prefix routing (prefixes are arbitrary
+    // strings in its config, not necessarily single characters).
+    function prefixFor(text) {
+        const s = String(text);
+        let best = "";
+        for (const prefix in providersByPrefix) {
+            if (prefix.length > best.length && s.startsWith(prefix)) best = prefix;
+        }
+        if (best.length === 0 && s.startsWith(root.allPrefix)) best = root.allPrefix;
+        return best;
+    }
+
+    function capabilityFor(name) {
+        for (const cap of providerCapabilities) {
+            if (cap.name === name) return cap;
+        }
+        return null;
+    }
+
+    function prettyName(name) {
+        const cap = root.capabilityFor(name);
+        return cap ? cap.namePretty : name;
+    }
+
+    function applyProviders(list) {
+        const caps = [];
+        const names = [];
+        const byPrefix = {};
+        for (const raw of list) {
+            if (!raw) continue;
+            const name = typeof raw === "string" ? raw : String(raw.name || "");
+            if (name.length === 0) continue;
+            const prefixes = (Array.isArray(raw.prefixes) ? raw.prefixes : []).filter(p => typeof p === "string" && p.length > 0);
+            caps.push({
+                name: name,
+                namePretty: String(raw.name_pretty || name),
+                description: String(raw.description || ""),
+                prefixes: prefixes,
+                supportsQuery: raw.supports_query !== false
+            });
+            names.push(name);
+            for (const prefix of prefixes) {
+                if (!(prefix in byPrefix)) byPrefix[prefix] = name;
+            }
+        }
+        root.providerCapabilities = caps;
+        root.availableProviders = names;
+        root.providersByPrefix = byPrefix;
+        root._providersLoaded = true;
+    }
+
+    // QLocalSocket::LocalSocketError values; anything else falls through to the generic text.
+    function socketErrorText(error) {
+        switch (error) {
+        case 0: return "EpochOxide refused the connection";
+        case 1: return "EpochOxide closed the connection";
+        case 2: return "EpochOxide is not running";
+        case 3: return "No permission to open the EpochOxide socket";
+        case 5: return "EpochOxide timed out";
+        default: return "Cannot reach EpochOxide";
+        }
+    }
+
+    function openMenu(name, label) {
+        root.menuScope = name;
+        root.menuLabel = label || name;
+        root.setQuery("");
+    }
+
+    function clearMenu() {
+        root.menuScope = "";
+        root.menuLabel = "";
+    }
+
+    // A Socket that failed to connect stays dead: reassigning `connected`/`path` on it is a no-op,
+    // so recovering from a stopped backend means building a new one.
+    function rebuildSocket() {
+        socketLoader.active = false;
+        socketLoader.active = true;
     }
 
     function sendNextRequest() {
         if (_requestInFlight || _requestQueue.length === 0) return;
+        const socket = socketLoader.item;
+        if (!socket || !socket.connected) return;
         _requestInFlight = true;
         const request = _requestQueue[0];
         if (request.payload.type === "query") root._streamBatches = {};
-        epochoxideSocket.write(JSON.stringify(request.payload) + "\n");
-        epochoxideSocket.flush();
+        socket.write(JSON.stringify(request.payload) + "\n");
+        socket.flush();
         requestTimeout.restart();
     }
 
@@ -128,13 +209,17 @@ Singleton {
             resultModel.clear();
             return;
         }
-        const first = raw.length > 0 ? raw[0] : "";
+        if (root.menuScope.length > 0) {
+            startQuery("menus:" + root.menuScope, raw.trim());
+            return;
+        }
+        const prefix = root.prefixFor(raw);
         let providers;
         let q;
-        const prefixedProvider = root.providerForPrefix(first);
+        const prefixedProvider = root.providerForPrefix(prefix);
         if (prefixedProvider.length > 0) {
             providers = prefixedProvider;
-            q = raw.slice(1);
+            q = raw.slice(prefix.length);
         } else if (root.providerAvailable("calc") && root.isMathQuery(raw)) {
             providers = "calc";
             q = raw.trim();
@@ -158,6 +243,9 @@ Singleton {
     }
 
     function refreshProviders() {
+        // While the backend is down requests sit in the queue instead of being written, so don't
+        // stack up a providers refresh per reconnect attempt.
+        if (_requestQueue.some(request => request.kind === "providers")) return;
         enqueueRequest("providers", { type: "providers" });
     }
 
@@ -240,7 +328,7 @@ Singleton {
 
     Timer {
         id: debounceTimer
-        interval: query.startsWith("/") ? 40 : 150
+        interval: root.providerForPrefix(root.prefixFor(root.query)) === "files" ? 40 : 150
         repeat: false
         onTriggered: root.runQuery()
     }
@@ -255,65 +343,89 @@ Singleton {
             root._streamBatches = {};
             root.searching = false;
             console.log("launcher epochoxide timeout:", root.socketPath);
-            epochoxideSocket.connected = false;
-            epochoxideSocket.connected = true;
-            reconnectTimer.restart();
+            // Only a live connection can be "not responding"; otherwise keep the socket's own
+            // error, which says something more useful (not running, refused, no permission).
+            if (root.backendConnected) root.backendError = "EpochOxide is not responding";
+            root.rebuildSocket();
         }
     }
 
+    // The backend is a user service that can be stopped, crash, or come up after the shell;
+    // keep rebuilding the socket so the launcher recovers on its own once it is back.
     Timer {
-        id: reconnectTimer
-        interval: 200
-        repeat: false
-        onTriggered: root.refreshProviders()
+        id: retryTimer
+        interval: 2000
+        repeat: true
+        running: !root.backendConnected
+        onTriggered: root.rebuildSocket()
     }
 
-    Socket {
-        id: epochoxideSocket
-        path: root.socketPath
-        connected: true
+    Loader {
+        id: socketLoader
+        active: true
 
-        parser: SplitParser {
-            onRead: function (line) {
-                const request = root._requestQueue.length > 0 ? root._requestQueue[0] : null;
-                if (!request) return;
-                let response;
-                try {
-                    response = JSON.parse(line);
-                } catch (e) {
-                    console.log("launcher epochoxide parse error:", e, line);
+        sourceComponent: Socket {
+            id: epochoxideSocket
+            path: root.socketPath
+            connected: true
+
+            onConnectionStateChanged: {
+                if (!epochoxideSocket.connected) {
+                    root._requestQueue = [];
+                    root._requestInFlight = false;
+                    root._streamBatches = {};
+                    root.searching = false;
                     return;
                 }
-                if (response.ok === false) {
-                    console.log("launcher epochoxide error:", response.error || "request failed");
-                    root.finishRequest();
-                    return;
-                }
-                if (request.kind === "providers") {
-                    const providers = Array.isArray(response.data) ? response.data.map(p => p.name || p).filter(p => p.length > 0) : [];
-                    root.availableProviders = providers;
-                    root._providersLoaded = true;
-                    root.providersUpdated();
-                    root.finishRequest();
-                    return;
-                }
-                if (request.kind === "query") {
-                    const data = response.data;
-                    if (Array.isArray(data)) {
-                        root.applyQueryResult(data, request.meta);
+                root.backendError = "";
+                root.refreshProviders();
+            }
+
+            onError: function (error) {
+                root.backendError = root.socketErrorText(error);
+            }
+
+            parser: SplitParser {
+                onRead: function (line) {
+                    root.backendError = "";
+                    const request = root._requestQueue.length > 0 ? root._requestQueue[0] : null;
+                    if (!request) return;
+                    let response;
+                    try {
+                        response = JSON.parse(line);
+                    } catch (e) {
+                        console.log("launcher epochoxide parse error:", e, line);
+                        return;
+                    }
+                    if (response.ok === false) {
+                        console.log("launcher epochoxide error:", response.error || "request failed");
                         root.finishRequest();
                         return;
                     }
-                    if (data && data.type === "query_batch") {
-                        root.mergeQueryBatch(data.provider, data.items, request.meta);
-                        requestTimeout.restart();
+                    if (request.kind === "providers") {
+                        root.applyProviders(Array.isArray(response.data) ? response.data : []);
+                        root.providersUpdated();
+                        root.finishRequest();
                         return;
                     }
-                    root.finishStreamedQuery(request.meta);
+                    if (request.kind === "query") {
+                        const data = response.data;
+                        if (Array.isArray(data)) {
+                            root.applyQueryResult(data, request.meta);
+                            root.finishRequest();
+                            return;
+                        }
+                        if (data && data.type === "query_batch") {
+                            root.mergeQueryBatch(data.provider, data.items, request.meta);
+                            requestTimeout.restart();
+                            return;
+                        }
+                        root.finishStreamedQuery(request.meta);
+                        root.finishRequest();
+                        return;
+                    }
                     root.finishRequest();
-                    return;
                 }
-                root.finishRequest();
             }
         }
     }
