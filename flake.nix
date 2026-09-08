@@ -18,6 +18,11 @@
       url = "github:bjsemrad/epochoxide";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    epochctl = {
+      url = "github:bjsemrad/epochctl";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -27,6 +32,7 @@
       quickshell,
       home-manager,
       epochoxide,
+      epochctl,
       ...
     }:
     let
@@ -61,6 +67,7 @@
           quickshell = qs;
           epochshell = epochshell;
           epochoxide = epochoxide.packages.${system}.default;
+          epochctl = epochctl.packages.${system}.default;
           default = epochshell;
         }
       );
@@ -91,6 +98,7 @@
           epochPkg = self.packages.${pkgs.stdenv.hostPlatform.system}.epochshell;
           qsPkg = self.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
           epochoxidePkg = epochoxide.packages.${pkgs.stdenv.hostPlatform.system}.default;
+          epochctlPkg = epochctl.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
           # Tools the launcher's file-preview pane shells out to for formats Qt can't decode
           # natively here (no HEIF plugin in nixpkgs' qtimageformats; qtimageformats itself isn't
@@ -113,7 +121,10 @@
           '';
         in
         {
-          imports = [ epochoxide.homeManagerModules.default ];
+          imports = [
+            epochoxide.homeManagerModules.default
+            epochctl.homeManagerModules.default
+          ];
 
           options.programs.epochshell = {
             enable = lib.mkEnableOption "EpochShell (runs Quickshell)";
@@ -217,6 +228,30 @@
               default = { };
               description = "EpochOxide launcher backend shipped with EpochShell.";
             };
+
+            epochctl = lib.mkOption {
+              type = lib.types.submodule {
+                options = {
+                  enable = lib.mkOption {
+                    type = lib.types.bool;
+                    default = true;
+                    description = "Install epochctl, the control CLI for this shell.";
+                  };
+
+                  package = lib.mkOption {
+                    type = lib.types.package;
+                    default = epochctlPkg;
+                    description = "epochctl package to install.";
+                  };
+                };
+              };
+              default = { };
+              description = ''
+                epochctl, the command keybindings and scripts should call instead of raw
+                `qs ipc`. It is pointed at this module's own config directory and EpochOxide
+                socket, so the two cannot drift apart.
+              '';
+            };
           };
 
           config = lib.mkIf cfg.enable {
@@ -275,6 +310,17 @@ os.chmod(tmp, 0o600)
 os.replace(tmp, path)
 ' "$config_file"
               ''
+            );
+
+            # epochctl control CLI. Both paths are derived from this module rather than left to
+            # epochctl's own defaults: configDir follows cfg.configDir, and the socket is the one
+            # EpochOxide was told to use, with systemd's %t specifier resolved because a session
+            # environment variable is not a unit file.
+            programs.epochctl.enable = lib.mkDefault cfg.epochctl.enable;
+            programs.epochctl.package = lib.mkDefault cfg.epochctl.package;
+            programs.epochctl.configDir = lib.mkDefault "${config.xdg.configHome}/${cfg.configDir}";
+            programs.epochctl.socket = lib.mkDefault (
+              lib.replaceStrings [ "%t" ] [ "$XDG_RUNTIME_DIR" ] cfg.epochoxide.socket
             );
 
             # EpochOxide backend (launcher data providers) + its systemd user service
