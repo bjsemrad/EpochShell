@@ -293,6 +293,7 @@ os.replace(tmp, path)
               Unit = {
                 Description = "EpochShell (Quickshell)";
                 After = [ "graphical-session.target" ];
+                X-Restart-Triggers = [ "${self}/quickshell" ];
               };
               Service = {
                 ExecStart = "${epochRun}/bin/epochshell";
