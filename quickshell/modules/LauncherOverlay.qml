@@ -133,15 +133,25 @@ PanelWindow {
         root.chooseProvider(prefix);
     }
 
+    // A row's data lives in the model; listView.itemAtIndex() only answers once a delegate for
+    // that index has been created, which it has not on the first population of a freshly shown
+    // window. Reading the view instead of the model is why the first search came up with no
+    // preview until the selection moved and forced a second look.
+    function rowAt(index) {
+        const model = root.showingProviders ? providerModel : S.LauncherService.results;
+        if (index < 0 || index >= model.count) return null;
+        return model.get(index);
+    }
+
     function activateCurrent() {
         if (currentIndex < 0) return;
-        const delegate = listView.itemAtIndex(currentIndex);
-        if (!delegate) return;
+        const row = root.rowAt(currentIndex);
+        if (!row) return;
         if (root.showingProviders) {
-            root.chooseProvider(delegate.identifier);
+            root.chooseProvider(row.identifier);
             return;
         }
-        S.LauncherService.activate(delegate.provider, delegate.identifier, delegate.action);
+        S.LauncherService.activate(row.provider, row.identifier, row.action);
         close();
     }
 
@@ -253,21 +263,21 @@ PanelWindow {
             previewVisible = false;
             return;
         }
-        const delegate = currentIndex >= 0 ? listView.itemAtIndex(currentIndex) : null;
-        if (!delegate) {
+        const row = root.rowAt(currentIndex);
+        if (!row) {
             previewVisible = false;
             previewText = "";
             previewImage = "";
             return;
         }
-        const provider = delegate.provider;
-        const preview = delegate.preview;
+        const provider = row.provider;
+        const preview = row.preview;
         if ((provider === "files" || provider === "clipboard") && preview.length > 0) {
             previewVisible = true;
             previewProvider = provider;
             previewTitle = provider === "clipboard" ? "CLIPBOARD" : "FILE";
-            previewSubtext = delegate.text;
-            if (provider === "clipboard" || delegate.previewType === "text") {
+            previewSubtext = row.text;
+            if (provider === "clipboard" || row.previewType === "text") {
                 previewText = root.truncate(preview, root.previewTextMax);
                 previewImage = "";
             } else if (isNativeImagePath(preview)) {
