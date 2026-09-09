@@ -1,5 +1,6 @@
 import qs.commonwidgets
 import qs.services as S
+import qs.theme as T
 
 BarIconPopup {
     id: root
