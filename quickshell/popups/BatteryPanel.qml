@@ -34,10 +34,20 @@ HoverPopupWindow {
 
     BatteryLevel{}
 
+    ComponentSplitter {
+        visible: S.PowerProfile.available
+    }
+
+    PowerProfileRow {}
+
     ComponentSpacer{ bottomMargin: 6 }
 
+    // The CPU state changes constantly -- auto-cpufreq flips turbo as load moves -- so it is
+    // re-read while this panel is on screen and left alone the rest of the time.
     onVisibleChanged: {
+        S.PowerProfile.watching = visible;
         if (visible){
+            S.PowerProfile.refresh()
             S.PopupManager.closeOthers(batteryPopup)
         }
     }

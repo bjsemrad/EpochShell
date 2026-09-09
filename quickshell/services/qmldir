@@ -4,6 +4,7 @@ singleton Tailscale 1.0 Tailscale.qml
 singleton LocalSend 1.0 LocalSend.qml
 singleton Capture 1.0 Capture.qml
 singleton NixUpdates 1.0 NixUpdates.qml
+singleton PowerProfile 1.0 PowerProfile.qml
 singleton Bluetooth 1.0 BluetoothService.qml
 singleton AudioService 1.0 AudioService.qml
 singleton BatteryService 1.0 BatteryService.qml
