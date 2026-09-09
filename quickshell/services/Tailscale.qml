@@ -8,6 +8,7 @@ Singleton {
     id: tail
 
     property bool connected: false
+    property bool available: false
     property string magicDNSSuffix: ""
     property string connectedIP: ""
     property string selectedFile: ""
@@ -169,6 +170,7 @@ Singleton {
     }
 
     function applyStatus(data) {
+        available = true;
         magicDNSSuffix = data.magic_dns_suffix || "";
         connected = !!data.running;
         const selfMachine = data.self_machine || {};
@@ -312,6 +314,7 @@ Singleton {
                     const data = response.data || {};
                     const error = response.error || (data.message || "");
                     tail.backendError = ok ? "" : error;
+                    if (request.meta.kind === "status" && !ok) tail.available = false;
                     if (request.meta.kind === "status" && ok) tail.applyStatus(data);
                     else if (request.meta.kind === "machines" && ok) tail.applyMachines(data);
                     else if (request.meta.kind === "incoming" && ok) tail.applyIncoming(data);
