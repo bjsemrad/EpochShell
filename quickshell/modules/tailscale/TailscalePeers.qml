@@ -137,28 +137,28 @@ Item {
                                 }
 
                                 Rectangle {
+                                    // Same send affordance as the LocalSend panel: a glyph that
+                                    // shows what clicking will do, rather than a labelled button.
                                     visible: S.Tailscale.selectedFile.length > 0
-                                    width: 58
+                                    width: 24
                                     height: 24
-                                    radius: T.Config.roundRadius
-                                    color: sendMouse.containsMouse ? T.Config.accentLightShade : T.Config.surface
+                                    radius: 6
+                                    color: sendMouse.containsMouse && sendMouse.enabled ? T.Config.activeSelection : "transparent"
                                     anchors.verticalCenter: parent.verticalCenter
-                                    border.width: 1
-                                    border.color: T.Config.outline
 
                                     Text {
                                         anchors.centerIn: parent
-                                        text: S.Tailscale.sendingFile && S.Tailscale.sendTarget === modelData.taildropTarget ? "Sending" : "Send"
-                                        color: T.Config.surfaceText
-                                        font.pixelSize: T.Config.fontSizeSubtext
-                                        elide: Text.ElideRight
+                                        text: S.Tailscale.sendingFile && S.Tailscale.sendTarget === modelData.taildropTarget ? "󰔟" : "󰅧"
+                                        color: T.Config.accent
+                                        font.pixelSize: T.Config.fontSizeMedium
+                                        font.family: T.Config.fontFamily
                                     }
 
                                     MouseArea {
                                         id: sendMouse
                                         anchors.fill: parent
                                         hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
+                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                                         enabled: !S.Tailscale.sendingFile && modelData.taildropTarget.length > 0
                                         onClicked: mouse => {
                                             mouse.accepted = true;
