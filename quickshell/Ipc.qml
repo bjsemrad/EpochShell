@@ -117,11 +117,6 @@ Scope {
             overlay.openProvider(name);
             return root.ok({ open: true, provider: name });
         }
-
-        // Kept so existing keybindings that predate openProvider keep working.
-        function openKeybinds(): string {
-            return openProvider("keybinds");
-        }
     }
 
     // Normalized compositor state and actions, so a keybinding can drive the compositor through
