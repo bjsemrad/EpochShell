@@ -214,12 +214,14 @@
                       imagemagick
                       librsvg
                       fd
-                      # Capture. grim and slurp are wlroots screencopy tools rather than
-                      # compositor-specific ones, so the same pair serves Hyprland, niri, and
+                      # Capture. grim, slurp and wf-recorder are wlroots screencopy tools rather
+                      # than compositor-specific ones, so the same set serves Hyprland, niri, and
                       # sway. libnotify supplies notify-send, which is how a finished capture
-                      # reaches this shell's own notification server.
+                      # reaches this shell's own notification server. tesseract, listed above for
+                      # clipboard OCR, also backs the capture panel's OCR row.
                       grim
                       slurp
+                      wf-recorder
                       libnotify
                     ];
                     description = "Runtime tools made available to EpochOxide providers and capture.";

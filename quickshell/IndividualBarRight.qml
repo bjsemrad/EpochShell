@@ -30,20 +30,33 @@ RowLayout {
         property bool expanded: false
         property bool menuOpen: false
         property bool hovered: hoverHandler.hovered
-        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible) || (capturePanel.open && capturePanel.visible)
-        readonly property int itemSize: T.Config.barIconSize + T.Config.barModuleHorizontalPadding
+        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible) || (capturePanel.open && capturePanel.visible) || (recordPanel.open && recordPanel.visible)
+
         readonly property int drawerSpacing: Math.max(4, Math.round(T.Config.barModuleSpacing / 2))
         readonly property bool wantsExpanded: hovered || menuOpen || servicePopupOpen
         readonly property bool showLocalSendAlert: S.LocalSend.hasIncomingFiles || (expanded && S.LocalSend.connected)
         readonly property bool showTailscaleAlert: S.Tailscale.hasIncomingFiles || (expanded && S.Tailscale.available)
-        readonly property int collapsedAlertCount: (S.LocalSend.hasIncomingFiles ? 1 : 0) + (S.Tailscale.hasIncomingFiles ? 1 : 0)
-        readonly property int hiddenCount: 4 + S.SystemTray.trayItems.length
-        readonly property int fullCount: hiddenCount + 2
-        readonly property int collapsedAlertExtent: collapsedAlertCount * itemSize + Math.max(0, collapsedAlertCount - 1) * drawerSpacing
-        readonly property int fullExtent: fullCount * itemSize + Math.max(0, fullCount - 1) * drawerSpacing
+        // The drawer's width is measured from what is actually in it rather than counted.
+        //
+        // Counting items and multiplying by an icon width only holds while every item is an icon:
+        // the recording indicator carries a clock beside its dot, and a tray that gains an item
+        // has to be counted somewhere else again. Measuring means any number of alerts -- a
+        // recording, a Taildrop and a LocalSend transfer at once -- simply sit next to each other,
+        // and the drawer is as wide as they need.
+        //
+        // Alerts are always on show, so their width belongs to the collapsed drawer. That width is
+        // animated because the set changes on expand -- Tailscale and LocalSend show themselves
+        // when the drawer opens even with nothing waiting -- and a jump there reads as a glitch.
+        property int alertExtent: alertItems.implicitWidth > 0 ? alertItems.implicitWidth + drawerSpacing : 0
+        readonly property int toolsExtent: drawerItems.implicitWidth > 0 ? drawerItems.implicitWidth + drawerSpacing : 0
         property real revealProgress: expanded ? 1 : 0
 
-        implicitWidth: chevron.implicitWidth + collapsedAlertExtent + (fullExtent - collapsedAlertExtent) * revealProgress
+        implicitWidth: chevron.implicitWidth + alertExtent + toolsExtent * revealProgress
+
+        Behavior on alertExtent {
+            NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+        }
+
         implicitHeight: T.Config.barHeight
         clip: true
 
@@ -184,6 +197,11 @@ RowLayout {
                 Layout.alignment: Qt.AlignVCenter
                 popup: capturePanel
             }
+            RecordTrigger {
+                id: recordTool
+                Layout.alignment: Qt.AlignVCenter
+                popup: recordPanel
+            }
             HomeAssistantWidget {
                 id: hass
                 Layout.alignment: Qt.AlignVCenter
@@ -197,6 +215,10 @@ RowLayout {
             anchors.verticalCenter: parent.verticalCenter
             spacing: drawer.drawerSpacing
 
+            RecordingIndicator {
+                id: recordingIndicator
+                Layout.alignment: Qt.AlignVCenter
+            }
             LocalSendNetwork {
                 id: localSend
                 Layout.alignment: Qt.AlignVCenter
@@ -305,6 +327,11 @@ RowLayout {
     CapturePanel {
         id: capturePanel
         trigger: capture
+    }
+
+    RecordPanel {
+        id: recordPanel
+        trigger: recordTool
     }
 
     HomeAssistantPanel {

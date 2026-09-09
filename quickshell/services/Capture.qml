@@ -27,6 +27,16 @@ Singleton {
     // the OCR action hides itself rather than failing when it is missing.
     property bool ocrAvailable: false
     property string ocrLanguage: ""
+    // Recording needs wf-recorder, installed separately again.
+    property bool recordAvailable: false
+    property string recordingDirectory: ""
+
+    // The recording in progress, as the backend reports it. `recordingSeconds` is counted here
+    // between polls so the bar indicator ticks once a second without asking the daemon that often.
+    property bool recording: false
+    property string recordingPath: ""
+    property string recordingMode: ""
+    property int recordingSeconds: 0
 
     // What to do with a shot. Seeded from the backend's configured defaults, then owned by the
     // panel's switches for the rest of the session.
@@ -49,6 +59,16 @@ Singleton {
     // nothing fires. Long enough for the compositor to draw a frame without them, short enough
     // that it still feels like the click took the picture.
     readonly property real settleDelay: 0.4
+
+    // 0:42, 3:07, 1:02:13 -- what the bar shows while recording.
+    readonly property string recordingElapsed: {
+        const total = root.recordingSeconds;
+        const hours = Math.floor(total / 3600);
+        const minutes = Math.floor((total % 3600) / 60);
+        const seconds = total % 60;
+        const pad = value => (value < 10 ? "0" + value : String(value));
+        return hours > 0 ? (hours + ":" + pad(minutes) + ":" + pad(seconds)) : (minutes + ":" + pad(seconds));
+    }
 
     function fileName(path) {
         const value = String(path || "");
@@ -99,6 +119,33 @@ Singleton {
         }, { kind: "ocr", mode: String(mode) });
     }
 
+    // Recording outlives the request that starts it, so the panel's job is only to ask; what is
+    // running comes back from the daemon, which is also how a recording started from a keybinding
+    // shows up in the bar.
+    function startRecording(mode, select) {
+        if (busy || recording) return;
+        const interactive = mode === "region" || (mode === "window" && select === true);
+        busy = true;
+        status = interactive ? "Waiting for a selection..." : "Starting the recording...";
+        PopupManager.closeAll();
+        apiRequest("capture.record", {
+            mode: String(mode),
+            select: select === true,
+            delay: interactive ? 0 : root.settleDelay
+        }, { kind: "record" });
+    }
+
+    function stopRecording() {
+        if (!recording) return;
+        busy = true;
+        status = "Finishing the recording...";
+        apiRequest("capture.stopRecording", {}, { kind: "stopRecording" });
+    }
+
+    function refreshRecording() {
+        apiRequest("capture.recording", {}, { kind: "recording" });
+    }
+
     function setCopyToClipboard(value) {
         copyToClipboard = value === true;
         // A shot that is neither kept nor copied is thrown away the moment it is taken, so the
@@ -125,6 +172,8 @@ Singleton {
         windowCapture = data.window_capture === true;
         ocrAvailable = data.ocr === true;
         ocrLanguage = String(data.ocr_language || "");
+        recordAvailable = data.record === true;
+        recordingDirectory = String(data.recording_directory || "");
         // capture.status answers even when the group cannot run, which is exactly when the tool
         // list matters: a missing required tool is what makes capture unavailable.
         const tools = Array.isArray(data.tools) ? data.tools : [];
@@ -167,6 +216,37 @@ Singleton {
             return;
         }
         status = (data.copied === true ? "Copied " : "Read ") + characters + (characters === 1 ? " character" : " characters");
+    }
+
+    // One reader for every answer that describes a recording -- starting, stopping, and polling
+    // all come back in the same shape, so they cannot disagree about what is running.
+    function applySession(ok, data, error, kind) {
+        if (kind !== "recording") busy = false;
+        if (!ok) {
+            // A poll that fails should not overwrite what the panel is saying; only an action the
+            // user just took is worth a message.
+            if (kind !== "recording") status = error || "Recording failed";
+            return;
+        }
+        if (data.cancelled === true) {
+            status = "Cancelled";
+            return;
+        }
+        const wasRecording = recording;
+        recording = data.recording === true;
+        recordingPath = String(data.path || "");
+        recordingMode = String(data.mode || "");
+        recordingSeconds = Number(data.seconds || 0);
+        if (recording) {
+            if (kind === "record") status = "Recording " + recordingMode;
+            return;
+        }
+        if (kind === "stopRecording" || (kind === "recording" && wasRecording)) {
+            // A stop with no file behind it is a recorder that wrote nothing, which the
+            // notification already explains; the panel says the short version.
+            status = recordingPath.length > 0 ? ("Saved " + root.fileName(recordingPath)) : "Nothing was recorded";
+            recordingPath = "";
+        }
     }
 
     function apiRequest(method, params, meta) {
@@ -228,6 +308,20 @@ Singleton {
         }
     }
 
+    // While something is recording the elapsed time is ticked locally and the daemon is asked
+    // once a second; otherwise the poll is slow, and exists only so a recording started from a
+    // keybinding still lights up the bar.
+    Timer {
+        id: recordingPoll
+        interval: root.recording ? 1000 : 5000
+        repeat: true
+        running: root.connected
+        onTriggered: {
+            if (root.recording) root.recordingSeconds += 1;
+            root.refreshRecording();
+        }
+    }
+
     Timer {
         id: retry
         interval: 2000
@@ -254,6 +348,7 @@ Singleton {
                 root.backendError = "";
                 root.sendNextRequest();
                 root.refresh();
+                root.refreshRecording();
             }
 
             onError: function (error) {
@@ -286,6 +381,8 @@ Singleton {
                         root.applyShot(ok, data, error);
                     } else if (request.meta.kind === "ocr") {
                         root.applyText(ok, data, error);
+                    } else if (request.meta.kind === "record" || request.meta.kind === "stopRecording" || request.meta.kind === "recording") {
+                        root.applySession(ok, data, error, request.meta.kind);
                     }
                     root.finishRequest();
                 }

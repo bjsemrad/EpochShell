@@ -184,6 +184,19 @@ Singleton {
         return path.startsWith("/") ? path : "";
     }
 
+    // Whether an image source stops working once the notification behind it is gone.
+    //
+    // A pixmap sent with the notification lives in a provider tied to that notification, so
+    // history has to drop it -- there is nothing left to draw once it closes. A theme icon is not
+    // like that: `image://icon/camera-photo` is a name the icon theme resolves whenever it is
+    // drawn, so keeping it is what puts an icon on a history card at all. Clearing both is why a
+    // notification sent with `notify-send --icon=camera-photo` had an icon in the toast and a
+    // blank space in the notification centre.
+    function staleAfterTheNotification(source) {
+        const value = String(source || "");
+        return value.startsWith("image://") && !value.startsWith("image://icon/");
+    }
+
     function persistNotificationImages(notificationId, timestamp, appIcon, image) {
         const stem = String(timestamp) + "-" + String(notificationId);
         const out = { appIcon: String(appIcon || ""), image: String(image || "") };
@@ -202,7 +215,7 @@ Singleton {
             command.push(appIconSource, target);
             out.appIcon = "file://" + target;
             copies += 1;
-        } else if (out.appIcon.startsWith("image://")) {
+        } else if (staleAfterTheNotification(out.appIcon)) {
             out.appIcon = "";
         }
 
@@ -212,7 +225,7 @@ Singleton {
             command.push(imageSource, target);
             out.image = "file://" + target;
             copies += 1;
-        } else if (out.image.startsWith("image://")) {
+        } else if (staleAfterTheNotification(out.image)) {
             out.image = "";
         }
 
