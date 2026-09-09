@@ -25,7 +25,7 @@ Singleton {
         "layoutSpacingSmall", "roundRadius", "connectedIconSize", "fontSizeNormal",
         "fontSizeMedium", "fontSizeLarge", "fontSizeXLarge", "fontSizeSubtext",
         "cardRadius", "cardHeight", "cardMargin", "cardSpacing", "networkPopupWidth",
-        "tailscalePopupWidth", "localsendPopupWidth", "bluetoothPopupWidth", "audioPopupWidth", "systemTrayPopupWidth",
+        "tailscalePopupWidth", "bluetoothPopupWidth", "audioPopupWidth", "systemTrayPopupWidth",
         "systemPopupWidth", "batteryPopupWidth", "musicPlayerWidth", "controlCenterPopupWidth", "homeAssistantPopupWidth",
         "tailscalePeersFontSize", "selectedBorderWidth", "panelBottomMargin",
         "panelBottomMarginMedium", "statMargin", "barHeight", "cornerRadius", "headerSize",
@@ -105,7 +105,6 @@ Singleton {
 
     property int networkPopupWidth: 400
     property int tailscalePopupWidth: 700
-    property int localsendPopupWidth: 420
     property int bluetoothPopupWidth: 400
     property int audioPopupWidth: 550
     property int systemTrayPopupWidth: 300
@@ -237,7 +236,6 @@ Singleton {
         cardSpacing = 10;
         networkPopupWidth = 400;
         tailscalePopupWidth = 700;
-        localsendPopupWidth = 420;
         bluetoothPopupWidth = 400;
         audioPopupWidth = 550;
         systemTrayPopupWidth = 300;

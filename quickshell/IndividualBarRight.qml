@@ -10,7 +10,6 @@ import qs.modules.battery
 import qs.modules.bluetooth
 import qs.modules.ethernet
 import qs.modules.tailscale
-import qs.modules.localsend
 import qs.modules.homeassistant
 import qs.modules.wifi
 import qs.modules.notifications
@@ -29,14 +28,13 @@ RowLayout {
         property bool expanded: false
         property bool menuOpen: false
         property bool hovered: hoverHandler.hovered
-        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible)
+        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible)
         readonly property int itemSize: T.Config.barIconSize + T.Config.barModuleHorizontalPadding
         readonly property bool wantsExpanded: hovered || menuOpen || servicePopupOpen
         readonly property bool showTailscaleAlert: S.Tailscale.hasIncomingFiles || (expanded && S.Tailscale.available)
-        readonly property bool showLocalSendAlert: S.LocalSend.hasIncomingFiles || (expanded && S.LocalSend.connected)
-        readonly property int collapsedAlertCount: (S.LocalSend.hasIncomingFiles ? 1 : 0) + (S.Tailscale.hasIncomingFiles ? 1 : 0)
+        readonly property int collapsedAlertCount: S.Tailscale.hasIncomingFiles ? 1 : 0
         readonly property int hiddenCount: 3 + S.SystemTray.trayItems.length
-        readonly property int fullCount: hiddenCount + 2
+        readonly property int fullCount: hiddenCount + 1
         readonly property int collapsedAlertExtent: collapsedAlertCount * itemSize + Math.max(0, collapsedAlertCount - 1) * T.Config.barModuleSpacing
         readonly property int fullExtent: fullCount * itemSize + Math.max(0, fullCount - 1) * T.Config.barModuleSpacing
         property real revealProgress: expanded ? 1 : 0
@@ -185,11 +183,6 @@ RowLayout {
             spacing: T.Config.barModuleSpacing
             width: implicitWidth
 
-            LocalSendNetwork {
-                id: localSend
-                visible: drawer.showLocalSendAlert
-                popup: localSendPanel
-            }
             TailscaleNetwork {
                 id: tailNet
                 visible: drawer.showTailscaleAlert
@@ -281,11 +274,6 @@ RowLayout {
     TailscaleNetworkPanel {
         id: tailscaleNetworkPanel
         trigger: tailNet
-    }
-
-    LocalSendPanel {
-        id: localSendPanel
-        trigger: localSend
     }
 
     HomeAssistantPanel {
