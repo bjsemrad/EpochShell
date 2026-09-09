@@ -31,16 +31,17 @@ RowLayout {
         property bool hovered: hoverHandler.hovered
         readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible)
         readonly property int itemSize: T.Config.barIconSize + T.Config.barModuleHorizontalPadding
+        readonly property bool wantsExpanded: hovered || menuOpen || servicePopupOpen
         readonly property bool showTailscaleAlert: S.Tailscale.hasIncomingFiles || (expanded && S.Tailscale.available)
         readonly property bool showLocalSendAlert: S.LocalSend.hasIncomingFiles || (expanded && S.LocalSend.connected)
-        readonly property int alertCount: (showTailscaleAlert ? 1 : 0) + (showLocalSendAlert ? 1 : 0)
+        readonly property int collapsedAlertCount: (S.LocalSend.hasIncomingFiles ? 1 : 0) + (S.Tailscale.hasIncomingFiles ? 1 : 0)
         readonly property int hiddenCount: 3 + S.SystemTray.trayItems.length
-        readonly property int alertExtent: alertCount * itemSize + Math.max(0, alertCount - 1) * T.Config.barModuleSpacing
-        readonly property int hiddenExtent: hiddenCount * itemSize + Math.max(0, hiddenCount - 1) * T.Config.barModuleSpacing
-        readonly property int revealExtent: hiddenExtent + (alertCount > 0 ? T.Config.barModuleSpacing : 0)
+        readonly property int fullCount: hiddenCount + 2
+        readonly property int collapsedAlertExtent: collapsedAlertCount * itemSize + Math.max(0, collapsedAlertCount - 1) * T.Config.barModuleSpacing
+        readonly property int fullExtent: fullCount * itemSize + Math.max(0, fullCount - 1) * T.Config.barModuleSpacing
         property real revealProgress: expanded ? 1 : 0
 
-        implicitWidth: chevron.implicitWidth + alertExtent + revealExtent * revealProgress
+        implicitWidth: chevron.implicitWidth + collapsedAlertExtent + (fullExtent - collapsedAlertExtent) * revealProgress
         implicitHeight: T.Config.barHeight
         clip: true
 
@@ -49,11 +50,24 @@ RowLayout {
         }
 
         function updateExpanded() {
-            expanded = hovered || menuOpen || servicePopupOpen;
+            if (wantsExpanded) {
+                collapseTimer.stop();
+                expanded = true;
+            } else {
+                collapseTimer.restart();
+            }
         }
 
+        onWantsExpandedChanged: updateExpanded()
         onMenuOpenChanged: updateExpanded()
         onServicePopupOpenChanged: updateExpanded()
+
+        Timer {
+            id: collapseTimer
+            interval: 120
+            repeat: false
+            onTriggered: if (!drawer.wantsExpanded) drawer.expanded = false
+        }
 
         HoverHandler {
             id: hoverHandler
