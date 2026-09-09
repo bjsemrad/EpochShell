@@ -6,8 +6,8 @@ BarIconPopup {
     visible: S.Tailscale.connected || S.Tailscale.hasIncomingFiles
     mouseEnabled: true
     hoverEnabled: false
+    iconColor: S.Tailscale.hasIncomingFiles ? T.Config.accent : T.Config.surfaceText
     iconText: {
-        if (S.Tailscale.hasIncomingFiles) return "󰈔";
         return S.Tailscale.connected ? "󰒄" : "󰅛";
     }
 }

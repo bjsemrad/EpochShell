@@ -19,6 +19,7 @@ Rectangle {
     required property bool hoverEnabled
     property int fontPixelSize: T.Config.barIconSize
     property int verticalPadding: T.Config.barModuleVerticalPadding
+    property color iconColor: T.Config.surfaceText
     property alias isHovered: mouseArea.containsMouse
 
     MouseArea {
@@ -73,7 +74,7 @@ Rectangle {
             font.pixelSize: root.fontPixelSize
             font.family: T.Config.fontFamily
             anchors.centerIn: parent
-            color: T.Config.surfaceText
+            color: root.iconColor
         }
     }
 }
