@@ -6,7 +6,8 @@ The project is intentionally pragmatic: it keeps only the pieces used by the cur
 
 ## Features
 
-- Top bar with workspace indicators, launcher, media indicator, clock, weather, network, Bluetooth, volume, Tailscale, battery, notifications, system tray items, and system menu.
+- Top bar with workspace indicators, launcher, media indicator, clock, weather, network, Bluetooth, volume, Tailscale, LocalSend, battery, notifications, system tray items, and system menu.
+- LocalSend panel for discovering nearby devices and sending them a file, backed by EpochOxide.
 - Custom launcher backed by `epochoxide` for applications, files, clipboard, windows, and calculator results.
 - Notification daemon UI with notification history and do-not-disturb support.
 - Sound, media, and brightness OSDs.
@@ -358,12 +359,14 @@ volumeSliderSpacing = 10
 Epoch Shell expects these tools/services to be available in the session:
 
 - `quickshell`
-- `epochoxide` for launcher results and activation
+- `epochoxide` for launcher results, activation, Tailscale state/actions, and LocalSend discovery/transfers
 - `hyprlock` for the lock action
 - `wpctl`/PipeWire stack for audio controls
 - `networkmanager` stack for network controls
 - `bluetoothctl`/BlueZ stack for Bluetooth controls
-- `tailscale` for Tailscale status/actions
+- `tailscale` for EpochOxide's Tailscale backend
+- LocalSend needs no local app: EpochOxide speaks the protocol itself, so the panel finds devices
+  whether or not the desktop app is running here
 - `pkexec`/polkit for privileged auth prompts
 - Optional `pam_fprintd.so` configuration for fingerprint auth
 

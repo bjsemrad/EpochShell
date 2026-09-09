@@ -28,8 +28,6 @@ Singleton {
     property bool ethernetDevice: false
     property string ethernetDeviceName: ""
     property string ethernetConnectedIP: ""
-    property bool tailscaleConnected: false
-    property string tailscaleConnectedIP: ""
 
     readonly property string currentNetworkIcon: {
         if (ethernetConnected) {
@@ -111,13 +109,6 @@ Singleton {
         } else {
             ethernetDeviceName = "";
             ethernetConnectedIP = "";
-        }
-        tailscaleConnected = Object.values(networkConnections).some(c => c.active && c.type === "vpn" && c.name.indexOf("tailscale") >= 0);
-        let tail = Object.entries(networkConnections).find(([device, conn]) => conn.active && conn.type === "vpn" && conn.name.indexOf("tailscale") >= 0);
-        if (tail) {
-            tailscaleConnectedIP = tail[1].ipv4;
-        } else {
-            tailscaleConnectedIP = "";
         }
     }
 

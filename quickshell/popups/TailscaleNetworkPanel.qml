@@ -37,6 +37,8 @@ HoverPopupWindow {
     ComponentSplitter{}
     TailscaleFileDrop{ popupWindow: tailscalePopup }
     ComponentSplitter{}
+    TailscaleReceive{ popupWindow: tailscalePopup }
+    ComponentSplitter{}
     TailscalePeers{}
     ComponentSpacer{}
 }

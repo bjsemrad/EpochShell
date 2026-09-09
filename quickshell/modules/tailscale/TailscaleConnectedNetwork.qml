@@ -14,5 +14,5 @@ ConnectedNetwork {
     connectedStatus: S.Tailscale.connected
     networkIconText: "󰒄"
     connectedName: S.Tailscale.magicDNSSuffix
-    connectedIp: S.Network.tailscaleConnectedIP
+    connectedIp: S.Tailscale.connectedIP
 }

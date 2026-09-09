@@ -1,6 +1,7 @@
 singleton Network 1.0 NetworkService.qml
 singleton PopupManager 1.0 PopupManager.qml
 singleton Tailscale 1.0 Tailscale.qml
+singleton LocalSend 1.0 LocalSend.qml
 singleton Bluetooth 1.0 BluetoothService.qml
 singleton AudioService 1.0 AudioService.qml
 singleton BatteryService 1.0 BatteryService.qml

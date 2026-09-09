@@ -10,6 +10,7 @@ import qs.modules.battery
 import qs.modules.bluetooth
 import qs.modules.ethernet
 import qs.modules.tailscale
+import qs.modules.localsend
 import qs.modules.homeassistant
 import qs.modules.wifi
 import qs.modules.notifications
@@ -212,6 +213,10 @@ RowLayout {
         id: tailNet
         popup: tailscaleNetworkPanel
     }
+    LocalSendNetwork {
+        id: localSend
+        popup: localSendPanel
+    }
     HomeAssistantWidget {
         id: hass
         popup: homeAssistantPanel
@@ -243,6 +248,11 @@ RowLayout {
     TailscaleNetworkPanel {
         id: tailscaleNetworkPanel
         trigger: tailNet
+    }
+
+    LocalSendPanel {
+        id: localSendPanel
+        trigger: localSend
     }
 
     HomeAssistantPanel {
