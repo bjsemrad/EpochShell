@@ -11,6 +11,9 @@ BarIconPopup {
     visible: S.Capture.connected
     mouseEnabled: true
     hoverEnabled: false
-    iconColor: S.Capture.busy ? T.Config.accent : T.Config.surfaceText
+    // One icon for every kind of capture, including recording: a second tool sitting next to this
+    // one turning red at the same time as the indicator by the drawer arrow is two things saying
+    // the same thing. Red here, the elapsed clock out there, and the panel for the controls.
+    iconColor: S.Capture.recording ? T.Config.red : (S.Capture.busy ? T.Config.accent : T.Config.surfaceText)
     iconText: S.Capture.busy ? "󰔟" : S.Capture.icon
 }

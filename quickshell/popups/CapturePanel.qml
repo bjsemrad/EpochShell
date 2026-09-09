@@ -23,6 +23,7 @@ HoverPopupWindow {
     onVisibleChanged: {
         if (visible) {
             S.Capture.refresh();
+            S.Capture.refreshRecording();
             S.PopupManager.closeOthers(capturePopup);
         }
     }
@@ -65,7 +66,12 @@ HoverPopupWindow {
         text: {
             if (S.Capture.backendError.length > 0) return S.Capture.backendError;
             if (!S.Capture.available && S.Capture.unavailableReason.length > 0) return S.Capture.unavailableReason;
-            return S.Capture.status;
+            if (S.Capture.status.length > 0) return S.Capture.status;
+            // Rows that hide themselves leave no trace, so the one thing missing is named here.
+            if (S.Capture.recording) return "Recording " + S.Capture.recordingMode + " · " + S.Capture.recordingElapsed;
+            if (!S.Capture.ocrAvailable) return "tesseract is not installed, so text capture is off";
+            if (!S.Capture.recordAvailable) return "wf-recorder is not installed, so recording is off";
+            return "";
         }
         color: (S.Capture.backendError.length > 0 || !S.Capture.available) ? T.Config.red : T.Config.outline
         font.pixelSize: T.Config.fontSizeSubtext
@@ -131,6 +137,50 @@ HoverPopupWindow {
             Layout.preferredHeight: visible ? T.Config.systemActionSize : 0
             function onClick() {
                 S.Capture.readText("region", false);
+            }
+        }
+    }
+
+    ComponentSplitter {
+        visible: S.Capture.recordAvailable
+        Layout.preferredHeight: visible ? undefined : 0
+    }
+
+    // Recording lives here with the stills rather than behind a second drawer icon. It is the one
+    // capture with a state, so the section is a pair: what can be started, or -- while something
+    // is running -- the only thing worth doing.
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: 4
+        visible: S.Capture.recordAvailable
+
+        SystemAction {
+            icon: "󰑊"
+            description: "Record region"
+            visible: !S.Capture.recording
+            Layout.preferredHeight: visible ? T.Config.systemActionSize : 0
+            function onClick() {
+                S.Capture.startRecording("region", false);
+            }
+        }
+
+        SystemAction {
+            icon: "󰕧"
+            description: "Record this monitor"
+            visible: !S.Capture.recording
+            Layout.preferredHeight: visible ? T.Config.systemActionSize : 0
+            function onClick() {
+                S.Capture.startRecording("fullscreen", false);
+            }
+        }
+
+        SystemAction {
+            icon: "󰙧"
+            description: "Stop recording · " + S.Capture.recordingElapsed
+            visible: S.Capture.recording
+            Layout.preferredHeight: visible ? T.Config.systemActionSize : 0
+            function onClick() {
+                S.Capture.stopRecording();
             }
         }
     }

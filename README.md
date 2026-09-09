@@ -8,9 +8,9 @@ The project is intentionally pragmatic: it keeps only the pieces used by the cur
 
 - Top bar with workspace indicators, launcher, media indicator, clock, weather, network, Bluetooth, volume, Tailscale, LocalSend, battery, notifications, system tray items, and system menu.
 - LocalSend panel for discovering nearby devices and sending them a file, backed by EpochOxide.
-- Capture panel in the bar drawer for region, window, and monitor screenshots and OCR text capture,
-  with clipboard, save, and pointer switches, backed by EpochOxide.
-- Record panel beside it for starting and stopping screen recordings.
+- Capture panel in the bar drawer for region, window, and monitor screenshots, OCR text capture,
+  and screen recording, with clipboard, save, and pointer switches, backed by EpochOxide. Its
+  camera icon turns red while a recording runs.
 - Recording indicator next to the drawer arrow: a pulsing dot and elapsed time while a recording
   runs, wherever it was started from, and a click to stop it. It shares that row with the Tailscale
   and LocalSend alerts, and several can show at once.
@@ -372,7 +372,7 @@ Epoch Shell expects these tools/services to be available in the session:
   `notify-send`, which this shell answers as the session's notification server. The Home Manager
   module installs all three.
 - `tesseract` for the capture panel's OCR row; the panel hides it when tesseract is missing.
-- `wf-recorder` for the record panel and its bar indicator, both hidden the same way.
+- `wf-recorder` for the capture panel's recording rows and the bar indicator, hidden the same way.
 - `hyprlock` for the lock action
 - `wpctl`/PipeWire stack for audio controls
 - `networkmanager` stack for network controls
