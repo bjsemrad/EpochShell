@@ -12,6 +12,7 @@ import qs.modules.ethernet
 import qs.modules.tailscale
 import qs.modules.localsend
 import qs.modules.capture
+import qs.modules.nix
 import qs.modules.homeassistant
 import qs.modules.wifi
 import qs.modules.notifications
@@ -30,11 +31,14 @@ RowLayout {
         property bool expanded: false
         property bool menuOpen: false
         property bool hovered: hoverHandler.hovered
-        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible) || (capturePanel.open && capturePanel.visible) || (recordPanel.open && recordPanel.visible)
+        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible) || (capturePanel.open && capturePanel.visible) || (recordPanel.open && recordPanel.visible) || (nixPanel.open && nixPanel.visible)
 
         readonly property int drawerSpacing: Math.max(4, Math.round(T.Config.barModuleSpacing / 2))
         readonly property bool wantsExpanded: hovered || menuOpen || servicePopupOpen
         readonly property bool showLocalSendAlert: S.LocalSend.hasIncomingFiles || (expanded && S.LocalSend.connected)
+        // Updates waiting are worth seeing with the drawer shut; a system that is up to date is
+        // only worth a look when the drawer is open anyway.
+        readonly property bool showNixAlert: S.NixUpdates.hasUpdates || (expanded && S.NixUpdates.available)
         readonly property bool showTailscaleAlert: S.Tailscale.hasIncomingFiles || (expanded && S.Tailscale.available)
         // The drawer's width is measured from what is actually in it rather than counted.
         //
@@ -219,6 +223,12 @@ RowLayout {
                 id: recordingIndicator
                 Layout.alignment: Qt.AlignVCenter
             }
+            NixTrigger {
+                id: nixUpdates
+                Layout.alignment: Qt.AlignVCenter
+                visible: S.NixUpdates.connected && drawer.showNixAlert
+                popup: nixPanel
+            }
             LocalSendNetwork {
                 id: localSend
                 Layout.alignment: Qt.AlignVCenter
@@ -332,6 +342,11 @@ RowLayout {
     RecordPanel {
         id: recordPanel
         trigger: recordTool
+    }
+
+    NixPanel {
+        id: nixPanel
+        trigger: nixUpdates
     }
 
     HomeAssistantPanel {

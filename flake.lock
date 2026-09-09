@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788972010,
-        "narHash": "sha256-Q7FhXRn97KGv27D+c1EZKMjxTsyml/CE9TNVmpvyFMI=",
+        "lastModified": 1788973814,
+        "narHash": "sha256-nOrImCNuyY2xvIuytU+Q7JQLrMVccp7bjnVzqiZj3Xg=",
         "owner": "bjsemrad",
         "repo": "epochctl",
-        "rev": "bef73e7027ae9a0c7088462272446bd2744fe820",
+        "rev": "6353d3f7a760e2d9e010b1a5ab01af1ed08eeab4",
         "type": "github"
       },
       "original": {
@@ -27,11 +27,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788971378,
-        "narHash": "sha256-ItbIHi4YThTkhC67xNlpbCDVkAgszwRNLcPy4TW0n1g=",
+        "lastModified": 1788973825,
+        "narHash": "sha256-/E1IGSaxPOB3+9TxFMX6ga34J0NWwAoV6R5xXjAyt7I=",
         "owner": "bjsemrad",
         "repo": "epochoxide",
-        "rev": "6f34500df403de3220b3d9293526efbe895c1089",
+        "rev": "decb350865cf5ce80270e31a26ce56adf4f5e976",
         "type": "github"
       },
       "original": {

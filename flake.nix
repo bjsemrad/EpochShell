@@ -147,6 +147,89 @@
               description = "Runtime tools made available to the shell process (e.g. launcher file-preview thumbnailers).";
             };
 
+            nixUpdates = lib.mkOption {
+              type = lib.types.submodule {
+                options = {
+                  enable = lib.mkEnableOption "flake update awareness in the shell";
+
+                  flake = lib.mkOption {
+                    type = lib.types.str;
+                    default = "";
+                    example = "~/nixconfig";
+                    description = ''
+                      Flake to watch for input updates. Checking never writes to it: the inputs are
+                      resolved into a throwaway lock file and compared, so flake.lock is left alone.
+                    '';
+                  };
+
+                  checkIntervalMinutes = lib.mkOption {
+                    type = lib.types.int;
+                    default = 60;
+                    description = "Minutes between automatic checks. Zero leaves only manual ones.";
+                  };
+
+                  updateCommand = lib.mkOption {
+                    type = lib.types.str;
+                    default = "nix flake update";
+                    description = ''
+                      Command the update action runs in a terminal, from the flake's directory.
+                      It runs through your login shell interactively, so an alias works here.
+                    '';
+                  };
+
+                  rebuildCommand = lib.mkOption {
+                    type = lib.types.str;
+                    default = "";
+                    example = "sudo nixos-rebuild switch --flake .#%HOST%";
+                    description = ''
+                      Fallback rebuild command for hosts read out of the flake, with %HOST%
+                      replaced by the host name. Empty means those hosts are offered no rebuild
+                      action at all, which is the default: guessing a rebuild command means running
+                      the wrong one on someone's machine.
+                    '';
+                  };
+
+                  hosts = lib.mkOption {
+                    type = lib.types.listOf (
+                      lib.types.submodule {
+                        options = {
+                          name = lib.mkOption {
+                            type = lib.types.str;
+                            description = "Host name, as nixosConfigurations calls it.";
+                          };
+                          rebuild = lib.mkOption {
+                            type = lib.types.str;
+                            default = "";
+                            description = "What rebuilds this host. Empty falls back to rebuildCommand.";
+                          };
+                        };
+                      }
+                    );
+                    default = [ ];
+                    example = [
+                      {
+                        name = "thor";
+                        rebuild = "nixswitch";
+                      }
+                    ];
+                    description = ''
+                      Hosts to offer a rebuild for, each with its own command. Per host rather than
+                      one template because a rebuild is usually an alias or a script that already
+                      knows its target. Empty reads the names from the flake.
+                    '';
+                  };
+
+                  notify = lib.mkOption {
+                    type = lib.types.bool;
+                    default = true;
+                    description = "Notify when an input gains an update it did not have last check.";
+                  };
+                };
+              };
+              default = { };
+              description = "Nix flake update awareness, shown in the shell's Nix panel.";
+            };
+
             homeAssistant = lib.mkOption {
               type = lib.types.submodule {
                 options = {
@@ -343,7 +426,22 @@ os.replace(tmp, path)
             programs.epochoxide.package = lib.mkDefault cfg.epochoxide.package;
             programs.epochoxide.socket = lib.mkDefault cfg.epochoxide.socket;
             programs.epochoxide.runtimePackages = lib.mkDefault cfg.epochoxide.runtimePackages;
-            programs.epochoxide.settings = lib.mkIf (cfg.epochoxide.settings != { }) cfg.epochoxide.settings;
+            # Nix awareness is EpochOxide's job -- it owns the timer, the cache and the commands --
+            # so these options are folded into its settings rather than being a second config file.
+            # Anything set directly in epochoxide.settings still wins.
+            programs.epochoxide.settings =
+              let
+                nixSettings = lib.optionalAttrs cfg.nixUpdates.enable {
+                  nix_flake = cfg.nixUpdates.flake;
+                  nix_check_interval_minutes = cfg.nixUpdates.checkIntervalMinutes;
+                  nix_update_command = cfg.nixUpdates.updateCommand;
+                  nix_rebuild_command = cfg.nixUpdates.rebuildCommand;
+                  nix_hosts = cfg.nixUpdates.hosts;
+                  nix_notify = cfg.nixUpdates.notify;
+                };
+                merged = nixSettings // cfg.epochoxide.settings;
+              in
+              lib.mkIf (merged != { }) merged;
             systemd.user.services.epochoxide.Unit = lib.mkIf cfg.epochoxide.enableService {
               X-Restart-Triggers = [ cfg.epochoxide.package ];
             };

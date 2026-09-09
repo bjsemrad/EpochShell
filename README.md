@@ -13,6 +13,9 @@ The project is intentionally pragmatic: it keeps only the pieces used by the cur
 - Record panel beside it for starting and stopping screen recordings. Its icon stands down while a
   recording runs, replaced by the indicator below, so only one thing on the bar is about recording
   at a time.
+- Nix panel showing which flake inputs can be updated, with a check button, an update action, and
+  a rebuild action per host -- all of which open a terminal rather than changing anything silently.
+  Its indicator sits with the alerts, so waiting updates show with the drawer shut.
 - Recording indicator next to the drawer arrow: a pulsing dot and elapsed time while a recording
   runs, wherever it was started from, and a click to stop it. It shares that row with the Tailscale
   and LocalSend alerts, and several can show at once.
@@ -363,6 +366,30 @@ volumeSliderMargin = 30
 volumeSliderSpacing = 10
 ```
 
+## Nix Updates
+
+The Home Manager module carries the flake watcher's settings, which it passes to EpochOxide:
+
+```nix
+programs.epochshell.nixUpdates = {
+  enable = true;
+  flake = "~/nixconfig";
+  checkIntervalMinutes = 60;
+  updateCommand = "nixupdate";          # runs through your login shell, so aliases work
+  hosts = [
+    { name = "thor"; rebuild = "nixswitch"; }
+  ];
+};
+```
+
+Checking never writes to the flake. `updateCommand` and each host's `rebuild` run in a terminal, in
+the flake's directory, through your login shell interactively -- so a shell alias is a valid
+command here -- and the terminal stays open when the command finishes so its output survives.
+
+Hosts you do not list are read from the flake's `nixosConfigurations` and fall back to
+`rebuildCommand` with `%HOST%` substituted; with no `rebuildCommand` they are shown without a
+rebuild action rather than with one that cannot work.
+
 ## Dependencies
 
 Epoch Shell expects these tools/services to be available in the session:
@@ -375,6 +402,7 @@ Epoch Shell expects these tools/services to be available in the session:
   module installs all three.
 - `tesseract` for the capture panel's OCR row; the panel hides it when tesseract is missing.
 - `wf-recorder` for the record panel and its bar indicator, dimmed and disabled the same way.
+- `nix` and a terminal for the Nix panel's check, update, and rebuild actions.
 - `hyprlock` for the lock action
 - `wpctl`/PipeWire stack for audio controls
 - `networkmanager` stack for network controls
