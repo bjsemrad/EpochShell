@@ -23,6 +23,10 @@ Singleton {
     property bool windowCapture: false
     property bool available: false
     property string unavailableReason: ""
+    // Reading text needs tesseract, which is installed separately from the screenshot tools, so
+    // the OCR action hides itself rather than failing when it is missing.
+    property bool ocrAvailable: false
+    property string ocrLanguage: ""
 
     // What to do with a shot. Seeded from the backend's configured defaults, then owned by the
     // panel's switches for the rest of the session.
@@ -77,6 +81,24 @@ Singleton {
         }, { kind: "screenshot", mode: String(mode) });
     }
 
+    // Read the text out of a region instead of keeping the picture of it. The image is a means to
+    // an end, so it is not saved even when the save switch is on -- the text is the result.
+    function readText(mode, select) {
+        if (busy) return;
+        const interactive = mode === "region" || (mode === "window" && select === true);
+        busy = true;
+        status = interactive ? "Waiting for a selection..." : "Reading text...";
+        lastPath = "";
+        PopupManager.closeAll();
+        apiRequest("capture.ocr", {
+            mode: String(mode),
+            select: select === true,
+            copy: root.copyToClipboard,
+            save: false,
+            delay: interactive ? 0 : root.settleDelay
+        }, { kind: "ocr", mode: String(mode) });
+    }
+
     function setCopyToClipboard(value) {
         copyToClipboard = value === true;
         // A shot that is neither kept nor copied is thrown away the moment it is taken, so the
@@ -101,6 +123,8 @@ Singleton {
         }
         directory = String(data.directory || "");
         windowCapture = data.window_capture === true;
+        ocrAvailable = data.ocr === true;
+        ocrLanguage = String(data.ocr_language || "");
         // capture.status answers even when the group cannot run, which is exactly when the tool
         // list matters: a missing required tool is what makes capture unavailable.
         const tools = Array.isArray(data.tools) ? data.tools : [];
@@ -125,6 +149,24 @@ Singleton {
         const where = data.saved === true ? ("Saved " + root.fileName(lastPath)) : "Copied to the clipboard";
         const also = data.saved === true && data.copied === true ? ", copied" : "";
         status = where + also;
+    }
+
+    function applyText(ok, data, error) {
+        busy = false;
+        if (!ok) {
+            status = error || "Reading text failed";
+            return;
+        }
+        if (data.cancelled === true) {
+            status = "Cancelled";
+            return;
+        }
+        const characters = Number(data.characters || 0);
+        if (characters === 0) {
+            status = "No text found";
+            return;
+        }
+        status = (data.copied === true ? "Copied " : "Read ") + characters + (characters === 1 ? " character" : " characters");
     }
 
     function apiRequest(method, params, meta) {
@@ -175,8 +217,8 @@ Singleton {
         onTriggered: {
             const request = root._requestQueue.length > 0 ? root._requestQueue[0] : null;
             root.busy = false;
-            if (request && request.meta.kind === "screenshot") {
-                root.status = "The screenshot never came back";
+            if (request && (request.meta.kind === "screenshot" || request.meta.kind === "ocr")) {
+                root.status = "The capture never came back";
             } else {
                 root.backendError = "EpochOxide is not responding";
             }
@@ -242,6 +284,8 @@ Singleton {
                         root.applyStatus(ok, data, error);
                     } else if (request.meta.kind === "screenshot") {
                         root.applyShot(ok, data, error);
+                    } else if (request.meta.kind === "ocr") {
+                        root.applyText(ok, data, error);
                     }
                     root.finishRequest();
                 }

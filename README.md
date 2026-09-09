@@ -8,8 +8,8 @@ The project is intentionally pragmatic: it keeps only the pieces used by the cur
 
 - Top bar with workspace indicators, launcher, media indicator, clock, weather, network, Bluetooth, volume, Tailscale, LocalSend, battery, notifications, system tray items, and system menu.
 - LocalSend panel for discovering nearby devices and sending them a file, backed by EpochOxide.
-- Capture panel in the bar drawer for region, window, and monitor screenshots, with clipboard,
-  save, and pointer switches, backed by EpochOxide.
+- Capture panel in the bar drawer for region, window, and monitor screenshots plus OCR text
+  capture, with clipboard, save, and pointer switches, backed by EpochOxide.
 - Custom launcher backed by `epochoxide` for applications, files, clipboard, windows, and calculator results.
 - Notification daemon UI with notification history and do-not-disturb support, including the
   screenshot notifications `epochctl capture screenshot` produces, thumbnail and all.
@@ -367,6 +367,7 @@ Epoch Shell expects these tools/services to be available in the session:
 - `grim`, `slurp`, and `libnotify` for screenshots: EpochOxide takes the shot and announces it with
   `notify-send`, which this shell answers as the session's notification server. The Home Manager
   module installs all three.
+- `tesseract` for the capture panel's OCR row; the panel hides it when tesseract is missing.
 - `hyprlock` for the lock action
 - `wpctl`/PipeWire stack for audio controls
 - `networkmanager` stack for network controls

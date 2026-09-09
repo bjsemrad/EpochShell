@@ -121,6 +121,18 @@ HoverPopupWindow {
                 S.Capture.shoot("all", false);
             }
         }
+
+        // Reading text is a capture like the others, so it sits with them rather than in a
+        // section of its own. It needs tesseract, which the status query reports on.
+        SystemAction {
+            icon: "󰈙"
+            description: "Text from region"
+            visible: S.Capture.ocrAvailable
+            Layout.preferredHeight: visible ? T.Config.systemActionSize : 0
+            function onClick() {
+                S.Capture.readText("region", false);
+            }
+        }
     }
 
     ComponentSplitter {}
