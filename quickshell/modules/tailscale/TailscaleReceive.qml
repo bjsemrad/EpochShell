@@ -109,7 +109,7 @@ Item {
             spacing: T.Config.layoutSpacingSmall
 
             Rectangle {
-                Layout.fillWidth: true
+                Layout.preferredWidth: receiveText.implicitWidth + T.Config.popupPadding * 2
                 Layout.preferredHeight: 28
                 radius: T.Config.roundRadius
                 color: receiveMouse.containsMouse ? T.Config.accentLightShade : T.Config.surface
@@ -117,10 +117,11 @@ Item {
                 border.color: S.Tailscale.hasIncomingFiles ? T.Config.accent : T.Config.outline
 
                 Text {
+                    id: receiveText
                     anchors.centerIn: parent
                     text: S.Tailscale.receivingFiles ? "Receiving..." : "Choose Save Folder"
                     color: T.Config.surfaceText
-                    font.pixelSize: T.Config.fontSizeNormal
+                    font.pixelSize: T.Config.fontSizeSubtext
                 }
 
                 MouseArea {
@@ -133,28 +134,7 @@ Item {
                 }
             }
 
-            Rectangle {
-                Layout.preferredWidth: refreshText.implicitWidth + T.Config.popupPadding
-                Layout.preferredHeight: 28
-                radius: T.Config.roundRadius
-                color: refreshMouse.containsMouse ? T.Config.surfaceContainerHigh : T.Config.surface
-
-                Text {
-                    id: refreshText
-                    anchors.centerIn: parent
-                    text: "Check"
-                    color: T.Config.surfaceText
-                    font.pixelSize: T.Config.fontSizeSubtext
-                }
-
-                MouseArea {
-                    id: refreshMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: S.Tailscale.refreshIncoming()
-                }
-            }
+            Item { Layout.fillWidth: true }
         }
     }
 

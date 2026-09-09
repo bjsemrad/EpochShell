@@ -11,6 +11,9 @@ Item {
 
     readonly property string summary: {
         if (S.LocalSend.backendError.length > 0) return S.LocalSend.backendError;
+        // Not accepting is a deliberate state, not an error: say so rather than showing a device
+        // count that implies transfers can arrive.
+        if (!S.LocalSend.receivingAvailable) return "Not accepting transfers";
         if (S.LocalSend.scanning) return "Looking for devices...";
         if (!S.LocalSend.scanned) return "Not searched yet";
         const count = S.LocalSend.devices.length;
@@ -22,14 +25,6 @@ Item {
         id: contents
         anchors.fill: parent
         spacing: T.Config.layoutMarginSmall
-
-        Text {
-            text: "LocalSend"
-            color: T.Config.surfaceText
-            font.pixelSize: T.Config.fontSizeLarge
-            font.bold: true
-            Layout.alignment: Qt.AlignVCenter
-        }
 
         Text {
             text: status.summary

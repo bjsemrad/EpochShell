@@ -23,6 +23,7 @@ HoverPopupWindow {
     Component.onDestruction: S.PopupManager.unregister(localSendPopup)
     Component.onCompleted: S.PopupManager.register(localSendPopup, "localsend")
 
+    LocalSendOnOff {}
     LocalSendStatus {}
     ComponentSplitter {}
     LocalSendReceive {}

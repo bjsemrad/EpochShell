@@ -23,9 +23,14 @@ Singleton {
     property bool scanned: false
     property string backendError: ""
     property bool receivingAvailable: false
+    property int receivingPort: 0
     property string downloadDir: ""
     property var incomingTransfers: []
     property string receiveStatus: ""
+
+    // Turning receiving off frees the LocalSend port so the desktop app can be used instead.
+    // The state itself lives in receivingAvailable, which applyStatus keeps current.
+    property bool togglingReceive: false
 
     property string selectedFile: ""
     property bool sendingFile: false
@@ -125,6 +130,7 @@ Singleton {
 
     function applyStatus(ok, data) {
         receivingAvailable = ok && data.receiving === true;
+        receivingPort = ok ? Number(data.port || 0) : 0;
         downloadDir = ok ? String(data.download_dir || "") : "";
     }
 
@@ -249,6 +255,7 @@ Singleton {
                 }
                 root.backendError = "";
                 root.sendNextRequest();
+                root.refreshStatus();
             }
 
             onError: function (error) {
@@ -270,7 +277,12 @@ Singleton {
                     const ok = response.ok !== false;
                     const data = response.data || {};
                     const error = response.error || data.message || "";
-                    root.backendError = ok ? "" : error;
+                    // An "unavailable" answer is a feature state, not a transport failure:
+                    // receiving is switched off, and the sections that care already say so.
+                    // Treating it as a backend error paints the whole panel red for something
+                    // that is working exactly as asked.
+                    if (ok) root.backendError = "";
+                    else if (data.code !== "unavailable") root.backendError = error;
                     if (request.meta.kind === "devices") {
                         if (ok) root.applyDevices(data);
                         else root.scanning = false;
