@@ -30,7 +30,7 @@ RowLayout {
         property bool expanded: false
         property bool menuOpen: false
         property bool hovered: hoverHandler.hovered
-        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible) || (capturePanel.open && capturePanel.visible)
+        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible) || (capturePanel.open && capturePanel.visible) || (recordPanel.open && recordPanel.visible)
 
         readonly property int drawerSpacing: Math.max(4, Math.round(T.Config.barModuleSpacing / 2))
         readonly property bool wantsExpanded: hovered || menuOpen || servicePopupOpen
@@ -197,6 +197,11 @@ RowLayout {
                 Layout.alignment: Qt.AlignVCenter
                 popup: capturePanel
             }
+            RecordTrigger {
+                id: recordTool
+                Layout.alignment: Qt.AlignVCenter
+                popup: recordPanel
+            }
             HomeAssistantWidget {
                 id: hass
                 Layout.alignment: Qt.AlignVCenter
@@ -322,6 +327,11 @@ RowLayout {
     CapturePanel {
         id: capturePanel
         trigger: capture
+    }
+
+    RecordPanel {
+        id: recordPanel
+        trigger: recordTool
     }
 
     HomeAssistantPanel {
