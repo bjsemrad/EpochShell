@@ -11,6 +11,7 @@ import qs.modules.bluetooth
 import qs.modules.ethernet
 import qs.modules.tailscale
 import qs.modules.localsend
+import qs.modules.capture
 import qs.modules.homeassistant
 import qs.modules.wifi
 import qs.modules.notifications
@@ -29,14 +30,14 @@ RowLayout {
         property bool expanded: false
         property bool menuOpen: false
         property bool hovered: hoverHandler.hovered
-        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible)
+        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible) || (capturePanel.open && capturePanel.visible)
         readonly property int itemSize: T.Config.barIconSize + T.Config.barModuleHorizontalPadding
         readonly property int drawerSpacing: Math.max(4, Math.round(T.Config.barModuleSpacing / 2))
         readonly property bool wantsExpanded: hovered || menuOpen || servicePopupOpen
         readonly property bool showLocalSendAlert: S.LocalSend.hasIncomingFiles || (expanded && S.LocalSend.connected)
         readonly property bool showTailscaleAlert: S.Tailscale.hasIncomingFiles || (expanded && S.Tailscale.available)
         readonly property int collapsedAlertCount: (S.LocalSend.hasIncomingFiles ? 1 : 0) + (S.Tailscale.hasIncomingFiles ? 1 : 0)
-        readonly property int hiddenCount: 3 + S.SystemTray.trayItems.length
+        readonly property int hiddenCount: 4 + S.SystemTray.trayItems.length
         readonly property int fullCount: hiddenCount + 2
         readonly property int collapsedAlertExtent: collapsedAlertCount * itemSize + Math.max(0, collapsedAlertCount - 1) * drawerSpacing
         readonly property int fullExtent: fullCount * itemSize + Math.max(0, fullCount - 1) * drawerSpacing
@@ -178,6 +179,11 @@ RowLayout {
             Colorpicker {
                 Layout.alignment: Qt.AlignVCenter
             }
+            CaptureTrigger {
+                id: capture
+                Layout.alignment: Qt.AlignVCenter
+                popup: capturePanel
+            }
             HomeAssistantWidget {
                 id: hass
                 Layout.alignment: Qt.AlignVCenter
@@ -294,6 +300,11 @@ RowLayout {
     LocalSendPanel {
         id: localSendPanel
         trigger: localSend
+    }
+
+    CapturePanel {
+        id: capturePanel
+        trigger: capture
     }
 
     HomeAssistantPanel {

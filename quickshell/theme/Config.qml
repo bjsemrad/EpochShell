@@ -27,7 +27,7 @@ Singleton {
         "cardRadius", "cardHeight", "cardMargin", "cardSpacing", "networkPopupWidth",
         "tailscalePopupWidth", "localsendPopupWidth", "bluetoothPopupWidth", "audioPopupWidth", "systemTrayPopupWidth",
         "systemPopupWidth", "batteryPopupWidth", "musicPlayerWidth", "controlCenterPopupWidth", "homeAssistantPopupWidth",
-        "tailscalePeersFontSize", "selectedBorderWidth", "panelBottomMargin",
+        "capturePopupWidth", "tailscalePeersFontSize", "selectedBorderWidth", "panelBottomMargin",
         "panelBottomMarginMedium", "statMargin", "barHeight", "cornerRadius", "headerSize",
         "switchHeight", "switchWidth", "switchKnobSize", "switchKnobRadius",
         "settingsHeaderHeight", "settingsHeaderSpacing", "systemActionSize",
@@ -114,6 +114,7 @@ Singleton {
     property int musicPlayerWidth: 600
     property int controlCenterPopupWidth: 700
     property int homeAssistantPopupWidth: 420
+    property int capturePopupWidth: 320
 
     property int tailscalePeersFontSize: 14
 
@@ -246,6 +247,7 @@ Singleton {
         musicPlayerWidth = 600;
         controlCenterPopupWidth = 700;
         homeAssistantPopupWidth = 420;
+        capturePopupWidth = 320;
         tailscalePeersFontSize = 14;
         selectedBorderWidth = 1;
         panelBottomMargin = 5;

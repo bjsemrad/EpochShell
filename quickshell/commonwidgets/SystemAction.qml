@@ -24,9 +24,13 @@ Rectangle {
         radius: T.Config.systemActionRadius
         color: actionMouseArea.containsMouse ? T.Config.surfaceContainerHigh : "transparent"
 
+        // Anchored on both sides, so a label longer than the row elides inside the highlight
+        // instead of running past its right edge.
         RowLayout {
             anchors.leftMargin: T.Config.systemActionMargin
+            anchors.rightMargin: T.Config.systemActionSpacing
             anchors.left: parent.left
+            anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             spacing: T.Config.systemActionSpacing
 
@@ -49,6 +53,8 @@ Rectangle {
                 text: description
                 font.pixelSize: T.Config.fontSizeLarge
                 Layout.alignment: Qt.AlignVCenter
+                Layout.fillWidth: true
+                elide: Text.ElideRight
                 color: T.Config.surfaceText
             }
         }

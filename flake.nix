@@ -214,8 +214,15 @@
                       imagemagick
                       librsvg
                       fd
+                      # Capture. grim and slurp are wlroots screencopy tools rather than
+                      # compositor-specific ones, so the same pair serves Hyprland, niri, and
+                      # sway. libnotify supplies notify-send, which is how a finished capture
+                      # reaches this shell's own notification server.
+                      grim
+                      slurp
+                      libnotify
                     ];
-                    description = "Runtime tools made available to EpochOxide providers.";
+                    description = "Runtime tools made available to EpochOxide providers and capture.";
                   };
 
                   settings = lib.mkOption {
@@ -259,6 +266,11 @@
             home.packages = [
               qsPkg
               epochRun
+              # notify-send. EpochShell is the notification *server*; this is the client that
+              # talks to it, and it is what EpochOxide's capture and any user keybinding or
+              # script reach for. Installing it in the profile rather than only on the daemon's
+              # PATH means `notify-send` works from a terminal too.
+              pkgs.libnotify
             ];
 
             # Install repo config into ~/.config/${cfg.configDir}
