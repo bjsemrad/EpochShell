@@ -22,6 +22,9 @@ Singleton {
     property bool scanning: false
     property bool scanned: false
     property string backendError: ""
+    property bool receivingAvailable: false
+    property string downloadDir: ""
+    property var incomingTransfers: []
 
     property string selectedFile: ""
     property bool sendingFile: false
@@ -33,6 +36,7 @@ Singleton {
 
     readonly property bool connected: socketLoader.item !== null && socketLoader.item.connected
     readonly property bool hasDevices: devices.length > 0
+    readonly property bool hasIncomingFiles: incomingTransfers.length > 0
     readonly property string icon: "󰒍"
 
     function fileName(path) {
@@ -70,6 +74,12 @@ Singleton {
         if (scanning) return;
         scanning = true;
         apiRequest("localsend.devices", {}, { kind: "devices" });
+        refreshIncoming();
+    }
+
+    function refreshIncoming() {
+        apiRequest("localsend.status", {}, { kind: "status" });
+        apiRequest("localsend.pending", {}, { kind: "pending" });
     }
 
     function sendFile(device) {
@@ -90,6 +100,15 @@ Singleton {
         scanned = true;
     }
 
+    function applyStatus(ok, data) {
+        receivingAvailable = ok && data.receiving === true;
+        downloadDir = ok ? String(data.download_dir || "") : "";
+    }
+
+    function applyPending(ok, data) {
+        incomingTransfers = ok && Array.isArray(data) ? data : [];
+    }
+
     function applySend(ok, error, meta) {
         sendingFile = false;
         const file = meta.file || selectedFile;
@@ -103,12 +122,10 @@ Singleton {
     }
 
     function apiRequest(method, params, meta) {
-        // Only the newest discovery matters; a queued one that has not gone out yet is dropped.
-        if (method === "localsend.devices") {
-        // Never drop the request that has already gone out: its response is still coming, and
-        // the reader identifies a response by this queue's first entry. Removing an in-flight
-        // request here makes every later response line up against the wrong one, so a status
-        // reply gets applied as something else and `connected` is never set.
+        // Only the newest polling request matters; a queued one that has not gone out yet is dropped.
+        if (method === "localsend.devices" || method === "localsend.status" || method === "localsend.pending") {
+            // Never drop the request that has already gone out: its response is still coming, and
+            // the reader identifies a response by this queue's first entry.
             const inFlight = _requestInFlight && _requestQueue.length > 0 ? [_requestQueue[0]] : [];
             const queued = _requestQueue.slice(inFlight.length).filter(request => request.method !== method);
             _requestQueue = inFlight.concat(queued);
@@ -178,6 +195,15 @@ Singleton {
         onTriggered: root.rebuildSocket()
     }
 
+    Timer {
+        id: incomingPoll
+        interval: 10000
+        repeat: true
+        running: true
+        triggeredOnStart: true
+        onTriggered: root.refreshIncoming()
+    }
+
     Loader {
         id: socketLoader
         active: true
@@ -220,6 +246,10 @@ Singleton {
                     if (request.meta.kind === "devices") {
                         if (ok) root.applyDevices(data);
                         else root.scanning = false;
+                    } else if (request.meta.kind === "status") {
+                        root.applyStatus(ok, data);
+                    } else if (request.meta.kind === "pending") {
+                        root.applyPending(ok, data);
                     } else if (request.meta.kind === "send") {
                         root.applySend(ok, error, request.meta);
                     }

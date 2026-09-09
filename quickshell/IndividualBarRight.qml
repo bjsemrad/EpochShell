@@ -29,12 +29,18 @@ RowLayout {
         property bool expanded: false
         property bool menuOpen: false
         property bool hovered: hoverHandler.hovered
-        property int drawerCount: 2 + S.SystemTray.trayItems.length
+        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible)
         readonly property int itemSize: T.Config.barIconSize + T.Config.barModuleHorizontalPadding
-        readonly property int fullExtent: drawerCount * itemSize + Math.max(0, drawerCount - 1) * T.Config.barModuleSpacing
+        readonly property bool showTailscaleAlert: S.Tailscale.hasIncomingFiles || (expanded && S.Tailscale.available)
+        readonly property bool showLocalSendAlert: S.LocalSend.hasIncomingFiles || (expanded && S.LocalSend.connected)
+        readonly property int alertCount: (showTailscaleAlert ? 1 : 0) + (showLocalSendAlert ? 1 : 0)
+        readonly property int hiddenCount: 3 + S.SystemTray.trayItems.length
+        readonly property int alertExtent: alertCount * itemSize + Math.max(0, alertCount - 1) * T.Config.barModuleSpacing
+        readonly property int hiddenExtent: hiddenCount * itemSize + Math.max(0, hiddenCount - 1) * T.Config.barModuleSpacing
+        readonly property int revealExtent: hiddenExtent + (alertCount > 0 ? T.Config.barModuleSpacing : 0)
         property real revealProgress: expanded ? 1 : 0
 
-        implicitWidth: chevron.implicitWidth + fullExtent * revealProgress
+        implicitWidth: chevron.implicitWidth + alertExtent + revealExtent * revealProgress
         implicitHeight: T.Config.barHeight
         clip: true
 
@@ -42,22 +48,25 @@ RowLayout {
             NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
         }
 
+        function updateExpanded() {
+            expanded = hovered || menuOpen || servicePopupOpen;
+        }
+
+        onMenuOpenChanged: updateExpanded()
+        onServicePopupOpenChanged: updateExpanded()
+
         HoverHandler {
             id: hoverHandler
-            onHoveredChanged: {
-                if (!hovered && drawer.menuOpen) return;
-                drawer.expanded = hovered;
-            }
+            onHoveredChanged: drawer.updateExpanded()
         }
 
         Row {
             id: drawerItems
-            anchors.right: chevron.left
+            anchors.right: alertItems.left
+            anchors.rightMargin: alertItems.width > 0 ? T.Config.barModuleSpacing : 0
             anchors.verticalCenter: parent.verticalCenter
             spacing: T.Config.barModuleSpacing
 
-            Clipboard {}
-            Colorpicker {}
             Repeater {
                 model: S.SystemTray.trayItems
 
@@ -94,9 +103,6 @@ RowLayout {
                         menu: trayDelegate.trayItem ? trayDelegate.trayItem.menu : null
                         onVisibleChanged: {
                             drawer.menuOpen = visible;
-                            if (!visible && !drawer.hovered) {
-                                drawer.expanded = false;
-                            }
                         }
                         anchor {
                             item: trayIconImg
@@ -150,6 +156,31 @@ RowLayout {
                     }
                 }
             }
+            Clipboard {}
+            Colorpicker {}
+            HomeAssistantWidget {
+                id: hass
+                popup: homeAssistantPanel
+            }
+        }
+
+        Row {
+            id: alertItems
+            anchors.right: chevron.left
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: T.Config.barModuleSpacing
+            width: implicitWidth
+
+            LocalSendNetwork {
+                id: localSend
+                visible: drawer.showLocalSendAlert
+                popup: localSendPanel
+            }
+            TailscaleNetwork {
+                id: tailNet
+                visible: drawer.showTailscaleAlert
+                popup: tailscaleNetworkPanel
+            }
         }
 
         Rectangle {
@@ -188,7 +219,7 @@ RowLayout {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: drawer.expanded = !drawer.expanded
+                onClicked: drawer.updateExpanded()
             }
         }
     }
@@ -208,18 +239,6 @@ RowLayout {
     Volume {
         id: vol
         popup: audioPanel
-    }
-    TailscaleNetwork {
-        id: tailNet
-        popup: tailscaleNetworkPanel
-    }
-    LocalSendNetwork {
-        id: localSend
-        popup: localSendPanel
-    }
-    HomeAssistantWidget {
-        id: hass
-        popup: homeAssistantPanel
     }
     Battery {
         id: battery
