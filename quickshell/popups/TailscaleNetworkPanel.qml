@@ -40,5 +40,5 @@ HoverPopupWindow {
     TailscaleReceive{ popupWindow: tailscalePopup }
     ComponentSplitter{}
     TailscalePeers{}
-    ComponentSpacer{}
+    ComponentSpacer{ bottomMargin: 6; Layout.preferredHeight: 1 }
 }

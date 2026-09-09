@@ -10,6 +10,7 @@ import qs.modules.battery
 import qs.modules.bluetooth
 import qs.modules.ethernet
 import qs.modules.tailscale
+import qs.modules.localsend
 import qs.modules.homeassistant
 import qs.modules.wifi
 import qs.modules.notifications
@@ -28,15 +29,17 @@ RowLayout {
         property bool expanded: false
         property bool menuOpen: false
         property bool hovered: hoverHandler.hovered
-        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible)
+        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible)
         readonly property int itemSize: T.Config.barIconSize + T.Config.barModuleHorizontalPadding
+        readonly property int drawerSpacing: Math.max(4, Math.round(T.Config.barModuleSpacing / 2))
         readonly property bool wantsExpanded: hovered || menuOpen || servicePopupOpen
+        readonly property bool showLocalSendAlert: S.LocalSend.hasIncomingFiles || (expanded && S.LocalSend.connected)
         readonly property bool showTailscaleAlert: S.Tailscale.hasIncomingFiles || (expanded && S.Tailscale.available)
-        readonly property int collapsedAlertCount: S.Tailscale.hasIncomingFiles ? 1 : 0
+        readonly property int collapsedAlertCount: (S.LocalSend.hasIncomingFiles ? 1 : 0) + (S.Tailscale.hasIncomingFiles ? 1 : 0)
         readonly property int hiddenCount: 3 + S.SystemTray.trayItems.length
-        readonly property int fullCount: hiddenCount + 1
-        readonly property int collapsedAlertExtent: collapsedAlertCount * itemSize + Math.max(0, collapsedAlertCount - 1) * T.Config.barModuleSpacing
-        readonly property int fullExtent: fullCount * itemSize + Math.max(0, fullCount - 1) * T.Config.barModuleSpacing
+        readonly property int fullCount: hiddenCount + 2
+        readonly property int collapsedAlertExtent: collapsedAlertCount * itemSize + Math.max(0, collapsedAlertCount - 1) * drawerSpacing
+        readonly property int fullExtent: fullCount * itemSize + Math.max(0, fullCount - 1) * drawerSpacing
         property real revealProgress: expanded ? 1 : 0
 
         implicitWidth: chevron.implicitWidth + collapsedAlertExtent + (fullExtent - collapsedAlertExtent) * revealProgress
@@ -72,18 +75,19 @@ RowLayout {
             onHoveredChanged: drawer.updateExpanded()
         }
 
-        Row {
+        RowLayout {
             id: drawerItems
             anchors.right: alertItems.left
-            anchors.rightMargin: alertItems.width > 0 ? T.Config.barModuleSpacing : 0
+            anchors.rightMargin: alertItems.width > 0 ? drawer.drawerSpacing : 0
             anchors.verticalCenter: parent.verticalCenter
-            spacing: T.Config.barModuleSpacing
+            spacing: drawer.drawerSpacing
 
             Repeater {
                 model: S.SystemTray.trayItems
 
                 delegate: Rectangle {
                     id: trayDelegate
+                    Layout.alignment: Qt.AlignVCenter
                     property var trayItem: modelData
                     property string iconSource: {
                         let icon = trayItem && trayItem.icon;
@@ -168,23 +172,34 @@ RowLayout {
                     }
                 }
             }
-            Clipboard {}
-            Colorpicker {}
+            Clipboard {
+                Layout.alignment: Qt.AlignVCenter
+            }
+            Colorpicker {
+                Layout.alignment: Qt.AlignVCenter
+            }
             HomeAssistantWidget {
                 id: hass
+                Layout.alignment: Qt.AlignVCenter
                 popup: homeAssistantPanel
             }
         }
 
-        Row {
+        RowLayout {
             id: alertItems
             anchors.right: chevron.left
             anchors.verticalCenter: parent.verticalCenter
-            spacing: T.Config.barModuleSpacing
-            width: implicitWidth
+            spacing: drawer.drawerSpacing
 
+            LocalSendNetwork {
+                id: localSend
+                Layout.alignment: Qt.AlignVCenter
+                visible: drawer.showLocalSendAlert
+                popup: localSendPanel
+            }
             TailscaleNetwork {
                 id: tailNet
+                Layout.alignment: Qt.AlignVCenter
                 visible: drawer.showTailscaleAlert
                 popup: tailscaleNetworkPanel
             }
@@ -274,6 +289,11 @@ RowLayout {
     TailscaleNetworkPanel {
         id: tailscaleNetworkPanel
         trigger: tailNet
+    }
+
+    LocalSendPanel {
+        id: localSendPanel
+        trigger: localSend
     }
 
     HomeAssistantPanel {
