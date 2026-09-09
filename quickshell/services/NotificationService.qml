@@ -2,7 +2,6 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
-import Quickshell.Hyprland
 
 Singleton {
     id: root
@@ -92,44 +91,18 @@ Singleton {
         const prefix = browserPrefix.toLowerCase();
         const toplevels = [];
 
-        if (CompositorService.isNiri) {
-            const windows = NiriService.windows;
-            for (let i = 0; i < windows.length; i++) {
-                const cls = normalizeClass(windows[i].appId || "");
-                if (cls.toLowerCase().startsWith(prefix)) {
-                    toplevels.push({
-                        cls: cls,
-                        title: String(windows[i].title || "").toLowerCase(),
-                        generic: isGenericBrowserClass(prefix, cls),
-                        win: null
-                    });
-                }
-            }
-        } else {
-            const workspaces = Hyprland.workspaces.values;
-            for (let w = 0; w < workspaces.length; w++) {
-                const tls = workspaces[w].toplevels.values;
-                for (let t = 0; t < tls.length; t++) {
-                    const keys = [tls[t].lastIpcObject?.class, tls[t].lastIpcObject?.initialClass, tls[t].wayland?.appId].filter(k => !!k);
-                    let cls = "";
-                    for (let k = 0; k < keys.length; k++) {
-                        const key = String(keys[k]);
-                        if (key.toLowerCase().startsWith(prefix)) {
-                            cls = normalizeClass(key);
-                            break;
-                        }
-                    }
-
-                    if (cls.length > 0) {
-                        toplevels.push({
-                            cls: cls,
-                            title: String(tls[t].lastIpcObject?.title || "").toLowerCase(),
-                            generic: isGenericBrowserClass(prefix, cls),
-                            win: tls[t]
-                        });
-                    }
-                }
-            }
+        // One loop over normalized windows: the compositor-specific branches this used to have
+        // are gone now that CompositorService reports the same shape for every backend.
+        const windows = CompositorService.windows;
+        for (let i = 0; i < windows.length; i++) {
+            const cls = normalizeClass(windows[i].app_id || "");
+            if (!cls.toLowerCase().startsWith(prefix)) continue;
+            toplevels.push({
+                cls: cls,
+                title: String(windows[i].title || "").toLowerCase(),
+                generic: isGenericBrowserClass(prefix, cls),
+                win: windows[i]
+            });
         }
 
         if (toplevels.length === 0) return null;
@@ -192,17 +165,9 @@ Singleton {
     }
 
     function workspaceIconForWindow(win) {
-        if (!win) return "";
-        const keys = [win.lastIpcObject?.class, win.lastIpcObject?.initialClass, win.wayland?.appId].filter(k => !!k);
-        let entry = null;
-        for (let i = 0; i < keys.length && !entry; i++) {
-            entry = CompositorService.getDesktopEntry(String(keys[i]));
-        }
-        if (entry) {
-            const resolved = CompositorService.getDesktopIcon(entry);
-            if (resolved.length > 0) return resolved;
-        }
-        return "";
+        if (!win || !win.app_id) return "";
+        const entry = CompositorService.getDesktopEntry(String(win.app_id));
+        return entry ? CompositorService.getDesktopIcon(entry) : "";
     }
 
     function localImageFile(value) {

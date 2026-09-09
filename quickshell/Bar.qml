@@ -6,8 +6,7 @@ import qs.theme as T
 import qs.popups
 import qs.modules
 import qs.modules.audio
-import qs.modules.hyprland
-import qs.modules.niri
+import qs.modules.compositor
 import qs.services as S
 
 Scope {
@@ -51,15 +50,7 @@ Scope {
 
                     BarFill {}
                     ApplicationLauncher {}
-                    NiriWorkspaces {
-                        visible: S.CompositorService.isNiri
-                    }
-                    HyprlandWorkspacesIcons {
-                        visible: S.CompositorService.isHyprland && T.Config.workspaceIcons
-                    }
-                    HyprlandWorkspaces {
-                        visible: S.CompositorService.isHyprland && !T.Config.workspaceIcons
-                    }
+                    Workspaces {}
                     BarFill {}
                 }
             }

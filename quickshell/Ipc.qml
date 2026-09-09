@@ -124,6 +124,35 @@ Scope {
         }
     }
 
+    // Normalized compositor state and actions, so a keybinding can drive the compositor through
+    // the same path the bar does rather than shelling out to hyprctl or niri msg.
+    IpcHandler {
+        target: "compositor"
+
+        function state(): string {
+            return root.ok({
+                backend: S.CompositorService.backend,
+                connected: S.CompositorService.connected,
+                workspaces: S.CompositorService.workspaces,
+                monitors: S.CompositorService.monitors,
+                windows: S.CompositorService.windows.length,
+                active_window: S.CompositorService.activeWindow
+            });
+        }
+
+        function focusWorkspace(id: string): string {
+            if (!S.CompositorService.connected) return root.fail("EpochOxide is not reachable");
+            S.CompositorService.focusWorkspace(id);
+            return root.ok({ workspace: id });
+        }
+
+        function focusWindow(id: string): string {
+            if (!S.CompositorService.connected) return root.fail("EpochOxide is not reachable");
+            S.CompositorService.focusWindow(id);
+            return root.ok({ window: id });
+        }
+    }
+
     IpcHandler {
         target: "shell"
 
