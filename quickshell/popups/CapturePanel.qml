@@ -142,7 +142,7 @@ HoverPopupWindow {
         Layout.fillWidth: true
         spacing: 0
 
-        CaptureOption {
+        ToggleRow {
             label: "Copy to clipboard"
             checkedValue: S.Capture.copyToClipboard
             function handleToggled(checked) {
@@ -150,7 +150,7 @@ HoverPopupWindow {
             }
         }
 
-        CaptureOption {
+        ToggleRow {
             label: "Save to file"
             hint: S.Capture.directory
             checkedValue: S.Capture.saveToDisk
@@ -159,7 +159,7 @@ HoverPopupWindow {
             }
         }
 
-        CaptureOption {
+        ToggleRow {
             label: "Include pointer"
             checkedValue: S.Capture.includeCursor
             function handleToggled(checked) {

@@ -7,6 +7,7 @@ import qs.popups
 import qs.modules
 import qs.modules.audio
 import qs.modules.compositor
+import qs.modules.system
 import qs.services as S
 
 Scope {
@@ -28,6 +29,15 @@ Scope {
             }
             color: T.Config.background
             implicitHeight: T.Config.barHeight
+
+            // Stay awake, at the compositor's level. The backend holds a logind inhibitor, which
+            // is what hypridle and systemd watch; this is the belt to that pair of braces, because
+            // a Wayland idle-inhibit stops the compositor reporting idle at all -- and it has to
+            // live here, since the protocol inhibits against a surface and the daemon has none.
+            IdleInhibitor {
+                window: barWindow
+                enabled: S.StayAwake.enabled
+            }
 
             Flickable {
                 id: leftSide
@@ -80,6 +90,11 @@ Scope {
                     Weather {
                         id: weather
                         popup: weatherPanel
+                    },
+                    // Only on screen while the machine is being held awake, so the centre of the
+                    // bar stays as it was the rest of the time.
+                    StayAwakeIndicator {
+                        Layout.alignment: Qt.AlignVCenter
                     },
                     BarFill {}
                 ]

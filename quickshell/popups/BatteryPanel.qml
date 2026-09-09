@@ -40,6 +40,24 @@ HoverPopupWindow {
 
     PowerProfileRow {}
 
+    ComponentSplitter {
+        visible: S.StayAwake.available
+    }
+
+    // Stay awake belongs with the battery: both answer "what is this laptop about to do to
+    // itself". The lock is held by EpochOxide, so the switch reflects what is actually held rather
+    // than what this panel last asked for.
+    ToggleRow {
+        label: "Stay awake"
+        hint: S.StayAwake.enabled ? ("held for " + S.StayAwake.held) : "Prevent idle lock and sleep"
+        checkedValue: S.StayAwake.enabled
+        visible: S.StayAwake.available
+
+        function handleToggled(checked) {
+            S.StayAwake.set(checked);
+        }
+    }
+
     ComponentSpacer{ bottomMargin: 6 }
 
     // The CPU state changes constantly -- auto-cpufreq flips turbo as load moves -- so it is

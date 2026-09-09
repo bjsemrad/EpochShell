@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
-import qs.commonwidgets
 import qs.theme as T
 
-// One switched option in the capture panel: a label, a hint, and a switch.
+// One switched option in a panel: a label, an optional hint under it, and a switch.
 //
 // SettingsToggleHeader is the bold section header with a settings gear; these sit under it as
 // ordinary rows, so they are their own small widget rather than a header pretending not to be one.
