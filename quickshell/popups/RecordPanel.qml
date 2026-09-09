@@ -91,7 +91,6 @@ HoverPopupWindow {
             icon: "󰖯"
             description: "Focused window"
             visible: S.Capture.windowCapture
-            Layout.preferredHeight: visible ? T.Config.systemActionSize : 0
             function onClick() {
                 S.Capture.startRecording("window", false);
             }
@@ -101,7 +100,6 @@ HoverPopupWindow {
             icon: "󰆟"
             description: "Pick a window"
             visible: S.Capture.windowCapture
-            Layout.preferredHeight: visible ? T.Config.systemActionSize : 0
             function onClick() {
                 S.Capture.startRecording("window", true);
             }

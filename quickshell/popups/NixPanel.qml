@@ -63,6 +63,7 @@ HoverPopupWindow {
         color: (S.NixUpdates.backendError.length > 0 || !S.NixUpdates.available || S.NixUpdates.error.length > 0) ? T.Config.red : T.Config.outline
         font.pixelSize: T.Config.fontSizeSubtext
         elide: Text.ElideRight
+        Layout.rightMargin: T.Config.systemActionSpacing
     }
 
     Text {
@@ -80,6 +81,7 @@ HoverPopupWindow {
         color: T.Config.outline
         font.pixelSize: T.Config.fontSizeSubtext
         elide: Text.ElideRight
+        Layout.rightMargin: T.Config.systemActionSpacing
     }
 
     Text {
@@ -89,11 +91,11 @@ HoverPopupWindow {
         color: T.Config.outline
         font.pixelSize: T.Config.fontSizeSubtext
         elide: Text.ElideRight
+        Layout.rightMargin: T.Config.systemActionSpacing
     }
 
     ComponentSplitter {
         visible: S.NixUpdates.movable.length > 0
-        Layout.preferredHeight: visible ? undefined : 0
     }
 
     // What could move. Inputs that are already current are left out: a wall of unchanged names
@@ -134,7 +136,6 @@ HoverPopupWindow {
             icon: "󰚰"
             description: "Update flake"
             visible: S.NixUpdates.updateCommand.length > 0
-            Layout.preferredHeight: visible ? T.Config.systemActionSize : 0
             function onClick() {
                 S.PopupManager.closeAll();
                 S.NixUpdates.update();
@@ -144,7 +145,6 @@ HoverPopupWindow {
 
     ComponentSplitter {
         visible: nixPopup.rebuildable.length > 0
-        Layout.preferredHeight: visible ? undefined : 0
     }
 
     // Every host in the flake shares one lock, so there is nothing per-host to report about
@@ -163,7 +163,7 @@ HoverPopupWindow {
 
             delegate: SystemAction {
                 required property var modelData
-                icon: "󰇷"
+                icon: "󰒋"
                 description: "Rebuild " + String(modelData.name || "")
                 function onClick() {
                     S.PopupManager.closeAll();

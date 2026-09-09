@@ -255,7 +255,10 @@ Singleton {
                 }
                 root.backendError = "";
                 root.sendNextRequest();
-                root.refreshStatus();
+                // Ask what the receiver is doing as soon as there is a connection to ask over.
+                // Discovery is deliberately not run here: it puts a multicast burst on the network,
+                // which is the panel's business to ask for, not a reconnection's.
+                root.refreshIncoming();
             }
 
             onError: function (error) {

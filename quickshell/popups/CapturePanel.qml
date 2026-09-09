@@ -73,6 +73,7 @@ HoverPopupWindow {
         color: (S.Capture.backendError.length > 0 || !S.Capture.available) ? T.Config.red : T.Config.outline
         font.pixelSize: T.Config.fontSizeSubtext
         elide: Text.ElideRight
+        Layout.rightMargin: T.Config.systemActionSpacing
     }
 
     ComponentSplitter {}
@@ -93,7 +94,6 @@ HoverPopupWindow {
             icon: "󰖯"
             description: "Focused window"
             visible: S.Capture.windowCapture
-            Layout.preferredHeight: visible ? T.Config.systemActionSize : 0
             function onClick() {
                 S.Capture.shoot("window", false);
             }
@@ -103,7 +103,6 @@ HoverPopupWindow {
             icon: "󰆟"
             description: "Pick a window"
             visible: S.Capture.windowCapture
-            Layout.preferredHeight: visible ? T.Config.systemActionSize : 0
             function onClick() {
                 S.Capture.shoot("window", true);
             }
@@ -131,7 +130,6 @@ HoverPopupWindow {
             icon: "󰈙"
             description: "Text from region"
             visible: S.Capture.ocrAvailable
-            Layout.preferredHeight: visible ? T.Config.systemActionSize : 0
             function onClick() {
                 S.Capture.readText("region", false);
             }

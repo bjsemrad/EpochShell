@@ -14,10 +14,14 @@ Item {
     required property string currentRev
     required property string latestRev
 
+    // Left margin to line up with the action rows below, right margin so an elided source string
+    // stops short of the popup's border rather than running into it.
     ColumnLayout {
         id: contents
         anchors.left: parent.left
         anchors.right: parent.right
+        anchors.leftMargin: T.Config.systemActionSpacing
+        anchors.rightMargin: T.Config.systemActionSpacing
         anchors.verticalCenter: parent.verticalCenter
         spacing: 0
 

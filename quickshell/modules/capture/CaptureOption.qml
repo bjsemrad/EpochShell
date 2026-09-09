@@ -20,8 +20,12 @@ Item {
         console.log("Missing Implementation");
     }
 
+    // Inset on the right so the switch is not flush against the popup's border. The action rows
+    // above carry systemActionMargin on their left, and a switch hard against the edge next to
+    // them reads as a layout mistake.
     RowLayout {
         anchors.fill: parent
+        anchors.rightMargin: T.Config.systemActionSpacing
         spacing: T.Config.layoutMarginSmall
 
         ColumnLayout {

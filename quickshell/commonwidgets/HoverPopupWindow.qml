@@ -19,8 +19,17 @@ PopupWindow {
     property int bottomPadding: padding * 2
     property real popupWidth: 1
 
-    implicitWidth: popupWidth
-    implicitHeight: contentLayout.implicitHeight + padding + bottomPadding
+    // A ring of transparent space around the card.
+    //
+    // On a fractionally scaled output -- 1.333 on a 2880x1920 panel run at 2160x1440 -- the
+    // window's last physical column and row can be rounded away, and they take the card's 1px
+    // border with them: the panel renders with no right edge, or no bottom edge, depending on how
+    // its size happens to round. Insetting the card by a whole logical pixel means the border is
+    // never the outermost pixel, so there is nothing at the edge left to lose.
+    readonly property int edgeInset: 1
+
+    implicitWidth: popupWidth + edgeInset * 2
+    implicitHeight: contentLayout.implicitHeight + padding + bottomPadding + edgeInset * 2
 
     property bool open: false
 
@@ -62,6 +71,7 @@ PopupWindow {
         ClippingRectangle {
             id: contentSection
             anchors.fill: parent
+            anchors.margins: popup.edgeInset
             radius: T.Config.popupRadius
             color: T.Config.background
             border.width: 1

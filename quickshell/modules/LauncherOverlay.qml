@@ -343,11 +343,10 @@ PanelWindow {
 
     onCurrentIndexChanged: previewTimer.restart()
 
-    Keys.onEscapePressed: event => {
-        close();
-        event.accepted = true;
-    }
-
+    // Escape is handled on the search field rather than here: `Keys` is an Item attached property
+    // and a PanelWindow is not an Item, so a handler at this level never attaches at all -- it only
+    // logs "Could not attach Keys property". The field holds focus for as long as the launcher is
+    // open, which is exactly when Escape has to work.
     MouseArea {
         anchors.fill: parent
         onClicked: root.close()
