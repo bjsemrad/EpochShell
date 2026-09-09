@@ -128,7 +128,13 @@ Singleton {
 
     function apiRequest(method, params, meta) {
         if (method === "tailscale.status" || method === "tailscale.machines" || method === "tailscale.pendingFiles") {
-            _requestQueue = _requestQueue.filter(request => request.method !== method);
+        // Never drop the request that has already gone out: its response is still coming, and
+        // the reader identifies a response by this queue's first entry. Removing an in-flight
+        // request here makes every later response line up against the wrong one, so a status
+        // reply gets applied as something else and `connected` is never set.
+            const inFlight = _requestInFlight && _requestQueue.length > 0 ? [_requestQueue[0]] : [];
+            const queued = _requestQueue.slice(inFlight.length).filter(request => request.method !== method);
+            _requestQueue = inFlight.concat(queued);
         }
         _requestQueue = _requestQueue.concat([{ method: method, params: params || {}, meta: meta || {} }]);
         sendNextRequest();
