@@ -14,6 +14,7 @@ ShellRoot {
     SoundOSD {}
     MediaOSD {}
     BrightnessOSD {}
+    KeyboardBacklightOSD {}
     Polkit {}
 
     // One launcher for the session, not one per bar. Bar.qml builds its contents under
