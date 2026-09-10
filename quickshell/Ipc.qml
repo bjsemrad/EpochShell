@@ -111,6 +111,14 @@ Scope {
             return root.ok({ open: false });
         }
 
+        // The provider list, which is otherwise only reachable by typing ";" into the launcher.
+        function providers(): string {
+            const overlay = root.launcherOverlay();
+            if (!overlay) return root.fail("launcher overlay is not loaded");
+            overlay.openProviders();
+            return root.ok({ open: true, providers: true });
+        }
+
         function openProvider(name: string): string {
             const overlay = root.launcherOverlay();
             if (!overlay) return root.fail("launcher overlay is not loaded");

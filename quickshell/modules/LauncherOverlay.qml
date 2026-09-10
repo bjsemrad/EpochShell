@@ -133,6 +133,21 @@ PanelWindow {
     // with its capabilities if the launcher is opened before that lands.
     property string pendingProvider: ""
 
+    /// Open straight into the provider list -- the view typing ";" reaches.
+    ///
+    /// The text is set to ";" rather than left empty so the state matches how the view is reached
+    /// by hand: typing after it behaves the same either way, instead of the list vanishing on the
+    /// first keystroke for one route and not the other.
+    function openProviders() {
+        root.open();
+        inputField.text = ";";
+        root.showingProviders = true;
+        root.buildProviderMenu();
+        root.currentIndex = providerModel.count > 0 ? 0 : -1;
+        listView.currentIndex = root.currentIndex;
+        inputField.forceActiveFocus();
+    }
+
     function openProvider(name) {
         root.open();
         root.pendingProvider = name;
