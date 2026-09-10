@@ -13,6 +13,7 @@ The project is intentionally pragmatic: it keeps only the pieces used by the cur
 - Record panel beside it for starting and stopping screen recordings. Its icon stands down while a
   recording runs, replaced by the indicator below, so only one thing on the bar is about recording
   at a time.
+- Night mode toggle in the system menu, with a bar indicator while the screen is warmed.
 - Nix panel showing which flake inputs can be updated, with a check button, an update action, and
   a rebuild action per host -- all of which open a terminal rather than changing anything silently.
   Its indicator sits with the alerts, so waiting updates show with the drawer shut.

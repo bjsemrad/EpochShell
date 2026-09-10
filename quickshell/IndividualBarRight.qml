@@ -238,6 +238,9 @@ RowLayout {
                 Layout.alignment: Qt.AlignVCenter
                 popup: firmwarePanel
             }
+            NightLightIndicator {
+                Layout.alignment: Qt.AlignVCenter
+            }
             IdleInhibitorToggle {
                 Layout.alignment: Qt.AlignVCenter
                 visible: S.StayAwake.connected && drawer.showIdleAlert

@@ -14,6 +14,8 @@ Item {
     required property string label
     required property bool checkedValue
     property string hint: ""
+    // False shows the row but refuses the switch: the hint says why it cannot be used.
+    property bool enableToggle: true
 
     function handleToggled(checked) {
         console.log("Missing Implementation");
@@ -54,7 +56,14 @@ Item {
             id: optionSwitch
             Layout.alignment: Qt.AlignVCenter
             checked: root.checkedValue
-            onToggled: root.handleToggled(optionSwitch.checked)
+            opacity: root.enableToggle ? 1 : 0.4
+            onToggled: {
+                if (!root.enableToggle) {
+                    optionSwitch.checked = root.checkedValue;
+                    return;
+                }
+                root.handleToggled(optionSwitch.checked);
+            }
         }
     }
 }

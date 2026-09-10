@@ -33,6 +33,8 @@ HoverPopupWindow {
     onVisibleChanged: {
         if (visible) {
             S.SystemInfo.refresh();
+            S.NightLight.refresh();
+            S.StayAwake.refresh();
             S.PopupManager.closeOthers(systemMenuPopup);
         }
     }
@@ -122,6 +124,39 @@ HoverPopupWindow {
             font.pixelSize: T.Config.fontSizeSubtext
             Layout.fillWidth: true
             elide: Text.ElideRight
+        }
+    }
+
+    ComponentSplitter {}
+
+    // Screen and session state, above the power actions: things you turn on and off, rather than
+    // things that end the session.
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: 0
+
+        ToggleRow {
+            label: "Night mode"
+            hint: S.NightLight.available
+                  ? (S.NightLight.enabled ? (S.NightLight.temperature + "K") : "Warm the screen")
+                  : S.NightLight.unavailableReason
+            checkedValue: S.NightLight.enabled
+            enableToggle: S.NightLight.available
+
+            function handleToggled(checked) {
+                S.NightLight.set(checked);
+            }
+        }
+
+        ToggleRow {
+            label: "Stay awake"
+            hint: S.StayAwake.enabled ? ("held for " + S.StayAwake.held) : "Prevent idle lock and sleep"
+            checkedValue: S.StayAwake.enabled
+            visible: S.StayAwake.available
+
+            function handleToggled(checked) {
+                S.StayAwake.set(checked);
+            }
         }
     }
 

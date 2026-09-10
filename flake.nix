@@ -387,6 +387,10 @@
                       slurp
                       wf-recorder
                       libnotify
+                      # Night mode: holds a wlr-gamma-control object while it runs. hyprsunset
+                      # works on niri too, which implements the same protocol.
+                      hyprsunset
+                      gammastep
                     ];
                     description = "Runtime tools made available to EpochOxide providers and capture.";
                   };
