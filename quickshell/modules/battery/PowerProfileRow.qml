@@ -59,5 +59,20 @@ Item {
             Layout.fillWidth: true
             elide: Text.ElideRight
         }
+
+        // Wear, which no desktop shows and everyone wants: a battery at 94% of the charge it
+        // shipped with, after 44 cycles.
+        Text {
+            visible: S.SystemInfo.batteryHealth > 0
+            text: {
+                const parts = ["health " + S.SystemInfo.batteryHealth + "%"];
+                if (S.SystemInfo.batteryCycles > 0) parts.push(S.SystemInfo.batteryCycles + " cycles");
+                return parts.join(" · ");
+            }
+            color: T.Config.outline
+            font.pixelSize: T.Config.fontSizeSubtext
+            Layout.fillWidth: true
+            elide: Text.ElideRight
+        }
     }
 }

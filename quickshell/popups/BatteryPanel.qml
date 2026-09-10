@@ -68,6 +68,7 @@ HoverPopupWindow {
             // Ask on open rather than waiting for a poll: opening the panel is exactly the moment
             // someone wants the answer, and a row that appears a few seconds later reads as broken.
             S.PowerProfile.refresh()
+            S.SystemInfo.refresh()
             S.StayAwake.refresh()
             S.PopupManager.closeOthers(batteryPopup)
         }

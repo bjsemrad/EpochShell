@@ -60,21 +60,17 @@ Singleton {
     }
 
     function refresh() {
-        if (_requestInFlight) return;
-        _requestInFlight = true;
+        send("system.power");
+    }
+
+    function send(method) {
         const socket = socketLoader.item;
-        if (!socket || !socket.connected) {
-            _requestInFlight = false;
-            return;
-        }
-        socket.write(JSON.stringify({ type: "api", method: "system.power", params: {}, version: 1 }) + "\n");
+        if (!socket || !socket.connected) return;
+        socket.write(JSON.stringify({ type: "api", method: method, params: {}, version: 1 }) + "\n");
         socket.flush();
     }
 
-    property bool _requestInFlight: false
-
     function apply(ok, data) {
-        _requestInFlight = false;
         if (!ok) {
             available = false;
             return;
@@ -122,7 +118,6 @@ Singleton {
             connected: true
 
             onConnectionStateChanged: {
-                root._requestInFlight = false;
                 // One read on connect, so a panel opening for the first time has something to show
                 // before its first poll comes round.
                 if (epochoxideSocket.connected) root.refresh();
@@ -135,7 +130,6 @@ Singleton {
                         response = JSON.parse(line);
                     } catch (e) {
                         console.log("power epochoxide parse error:", e, line);
-                        root._requestInFlight = false;
                         return;
                     }
                     root.apply(response.ok !== false, response.data || {});

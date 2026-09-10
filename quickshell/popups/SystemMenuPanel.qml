@@ -32,6 +32,7 @@ HoverPopupWindow {
 
     onVisibleChanged: {
         if (visible) {
+            S.SystemInfo.refresh();
             S.PopupManager.closeOthers(systemMenuPopup);
         }
     }
@@ -64,6 +65,63 @@ HoverPopupWindow {
             color: T.Config.surfaceText
             font.pixelSize: T.Config.fontSizeLarge
             Layout.alignment: Qt.AlignVCenter
+        }
+    }
+
+    // What this machine is. Three facts people look up and never remember: the model, the firmware
+    // it is running, and the kernel. Laid out as label/value pairs so the values line up rather
+    // than running together in a sentence.
+    GridLayout {
+        Layout.fillWidth: true
+        Layout.topMargin: 2
+        columns: 2
+        columnSpacing: T.Config.layoutMarginSmall
+        rowSpacing: 1
+        visible: S.SystemInfo.machine.length > 0 || S.SystemInfo.kernel.length > 0
+
+        Text {
+            text: "model"
+            visible: S.SystemInfo.machine.length > 0
+            color: T.Config.outline
+            font.pixelSize: T.Config.fontSizeSubtext
+        }
+        Text {
+            text: S.SystemInfo.machine
+            visible: S.SystemInfo.machine.length > 0
+            color: T.Config.surfaceText
+            font.pixelSize: T.Config.fontSizeSubtext
+            Layout.fillWidth: true
+            elide: Text.ElideRight
+        }
+
+        Text {
+            text: "bios"
+            visible: S.SystemInfo.biosVersion.length > 0
+            color: T.Config.outline
+            font.pixelSize: T.Config.fontSizeSubtext
+        }
+        Text {
+            text: S.SystemInfo.biosVersion
+            visible: S.SystemInfo.biosVersion.length > 0
+            color: T.Config.surfaceText
+            font.pixelSize: T.Config.fontSizeSubtext
+            Layout.fillWidth: true
+            elide: Text.ElideRight
+        }
+
+        Text {
+            text: "kernel"
+            visible: S.SystemInfo.kernel.length > 0
+            color: T.Config.outline
+            font.pixelSize: T.Config.fontSizeSubtext
+        }
+        Text {
+            text: S.SystemInfo.kernel
+            visible: S.SystemInfo.kernel.length > 0
+            color: T.Config.surfaceText
+            font.pixelSize: T.Config.fontSizeSubtext
+            Layout.fillWidth: true
+            elide: Text.ElideRight
         }
     }
 

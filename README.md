@@ -22,8 +22,9 @@ The project is intentionally pragmatic: it keeps only the pieces used by the cur
 - Custom launcher backed by `epochoxide` for applications, files, clipboard, windows, and calculator results.
 - Notification daemon UI with notification history and do-not-disturb support, including the
   screenshot notifications `epochctl capture screenshot` produces, thumbnail and all.
-- Battery panel showing the CPU power profile, governor, energy preference, turbo state, and which
-  daemon is managing them.
+- Battery panel showing the CPU power profile, governor, energy preference, turbo state, which
+  daemon is managing them, battery wear and cycle count, and a stay-awake switch.
+- Keyboard backlight OSD alongside the volume, media, and screen brightness ones.
 - Sound, media, and brightness OSDs.
 - Network, Bluetooth, audio, battery, weather, calendar, media, notification, and system popups.
 - Built-in polkit authentication agent with password and fingerprint-aware UI.

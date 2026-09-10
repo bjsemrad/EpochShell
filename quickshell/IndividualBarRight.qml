@@ -32,7 +32,7 @@ RowLayout {
         property bool expanded: false
         property bool menuOpen: false
         property bool hovered: hoverHandler.hovered
-        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible) || (capturePanel.open && capturePanel.visible) || (recordPanel.open && recordPanel.visible) || (nixPanel.open && nixPanel.visible)
+        readonly property bool servicePopupOpen: (homeAssistantPanel.open && homeAssistantPanel.visible) || (localSendPanel.open && localSendPanel.visible) || (tailscaleNetworkPanel.open && tailscaleNetworkPanel.visible) || (capturePanel.open && capturePanel.visible) || (recordPanel.open && recordPanel.visible) || (nixPanel.open && nixPanel.visible) || (firmwarePanel.open && firmwarePanel.visible)
 
         readonly property int drawerSpacing: Math.max(4, Math.round(T.Config.barModuleSpacing / 2))
         readonly property bool wantsExpanded: hovered || menuOpen || servicePopupOpen
@@ -233,6 +233,11 @@ RowLayout {
                 visible: S.NixUpdates.connected && drawer.showNixAlert
                 popup: nixPanel
             }
+            FirmwareTrigger {
+                id: firmwareUpdates
+                Layout.alignment: Qt.AlignVCenter
+                popup: firmwarePanel
+            }
             IdleInhibitorToggle {
                 Layout.alignment: Qt.AlignVCenter
                 visible: S.StayAwake.connected && drawer.showIdleAlert
@@ -355,6 +360,11 @@ RowLayout {
     NixPanel {
         id: nixPanel
         trigger: nixUpdates
+    }
+
+    FirmwarePanel {
+        id: firmwarePanel
+        trigger: firmwareUpdates
     }
 
     HomeAssistantPanel {
