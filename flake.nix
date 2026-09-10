@@ -72,11 +72,92 @@
         }
       );
 
+      # -----------------------
+      # Apps: things to run straight from the flake, without installing anything
+      # -----------------------
       apps = forAllSystems (
-        { system, ... }: {
+        { system, pkgs }:
+        let
+          ctl = "${epochctl.packages.${system}.default}/bin/epochctl";
+          qs = quickshell.packages.${system}.default;
+
+          # Quickshell against this repo's config rather than whatever is installed. The point of
+          # this one is trying EpochShell without touching a running session, so it says what it
+          # is about to do about the shell that is probably already running.
+          preview = pkgs.writeShellScript "epochshell-preview" ''
+            set -eu
+            config=''${1:-${self}/quickshell}
+            echo "EpochShell preview: $config"
+            if ${pkgs.systemd}/bin/systemctl --user is-active --quiet epochshell.service 2>/dev/null; then
+              echo "note: epochshell.service is running; this preview will draw a second bar."
+              echo "      stop it first with: systemctl --user stop epochshell.service"
+            fi
+            exec ${qs}/bin/quickshell -c "$config"
+          '';
+
+          # Every file a typo can silently disable. TOML that fails to parse is skipped at load
+          # time and the shell falls back to defaults, which looks like the setting not working
+          # rather than the file being wrong -- so this says so out loud.
+          checkConfig = pkgs.writeShellScript "epochshell-check-config" ''
+            set -u
+            status=0
+            check() {
+              if [ ! -e "$1" ]; then
+                echo "  --    $1 (not present)"
+                return 0
+              fi
+              if ${pkgs.python3}/bin/python3 -c "import sys,tomllib;tomllib.load(open(sys.argv[1],'rb'))" "$1" 2>/tmp/epochshell-toml-err; then
+                echo "  ok    $1"
+              else
+                echo "  FAIL  $1"
+                sed 's/^/        /' /tmp/epochshell-toml-err
+                status=1
+              fi
+            }
+            config_home=''${XDG_CONFIG_HOME:-$HOME/.config}
+            echo "Shell theme overrides:"
+            check "$config_home/epochshell/config.toml"
+            echo "EpochOxide:"
+            check "$config_home/epochoxide/config.toml"
+            echo "Launcher menus:"
+            found=0
+            for menu in "$config_home"/epochoxide/menus/*.toml; do
+              [ -e "$menu" ] || continue
+              found=1
+              check "$menu"
+            done
+            [ "$found" = 1 ] || echo "  --    no menus installed"
+            rm -f /tmp/epochshell-toml-err
+            exit $status
+          '';
+        in
+        {
           default = {
             type = "app";
             program = "${self.packages.${system}.epochshell}/bin/epochshell";
+          };
+
+          # Diagnose a session: the shell, the backend, and the tools they need.
+          doctor = {
+            type = "app";
+            program = "${pkgs.writeShellScript "epochshell-doctor" ''exec ${ctl} doctor "$@"''}";
+          };
+
+          # Try this checkout without installing it.
+          preview = {
+            type = "app";
+            program = "${preview}";
+          };
+
+          # Parse every config file before a rebuild turns a typo into silent defaults.
+          check-config = {
+            type = "app";
+            program = "${checkConfig}";
+          };
+
+          reload = {
+            type = "app";
+            program = "${pkgs.writeShellScript "epochshell-reload" ''exec ${ctl} reload "$@"''}";
           };
         }
       );
