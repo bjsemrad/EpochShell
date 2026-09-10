@@ -21,6 +21,9 @@ Singleton {
     readonly property bool backendConnected: socketLoader.item !== null && socketLoader.item.connected
     property string backendError: ""
     property bool _providersLoaded: false
+    // Whether the backend has answered with its provider list yet. Callers that need to know
+    // whether a provider has a prefix have to wait for this, or they will decide it has none.
+    readonly property bool providersLoaded: _providersLoaded
 
     readonly property int defaultAppsTTL: 600000
     property bool _defaultAppsLoaded: false
@@ -38,8 +41,21 @@ Singleton {
         id: resultModel
     }
 
+    // A provider the launcher is pinned to, regardless of what the query text says.
+    //
+    // Routing is otherwise entirely by prefix, which leaves a provider with no prefix -- a custom
+    // menu, say -- unreachable: there is nothing to type that scopes to it. Pinning is how the
+    // provider list and `epochctl launcher provider <name>` reach one.
+    property string scope: ""
+
     function setQuery(text) {
         query = text;
+        debounceTimer.restart();
+    }
+
+    function setScope(name) {
+        scope = String(name || "");
+        query = "";
         debounceTimer.restart();
     }
 
@@ -199,6 +215,11 @@ Singleton {
         if (raw === ";") {
             resultModel.clear();
             root.resultsUpdated();
+            return;
+        }
+        // A pinned provider wins over prefix routing: the text is all query, no prefix to strip.
+        if (root.scope.length > 0) {
+            root.startQuery(root.scope, raw.trim());
             return;
         }
         const prefix = root.prefixFor(raw);

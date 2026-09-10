@@ -59,6 +59,7 @@ PanelWindow {
     function open() {
         panelAnimate = false;
         inputField.text = "";
+        S.LauncherService.setScope("");
         showingProviders = false;
         currentIndex = -1;
         previewVisible = false;
@@ -83,6 +84,7 @@ PanelWindow {
     function close() {
         _visible = false;
         inputField.text = "";
+        S.LauncherService.setScope("");
         showingProviders = false;
         currentIndex = -1;
         listView.currentIndex = -1;
@@ -102,8 +104,25 @@ PanelWindow {
     // overlay competing for the same IPC target and the same Quickshell.screens[0] output.
     Component.onDestruction: S.PopupManager.registerLauncher(null)
 
+    /// Scope the launcher to the provider a list row describes.
+    ///
+    /// A row carries its prefix as the identifier, and typing that prefix is the cheapest way to
+    /// scope -- but a provider without one (any menu that has not been given a prefix) has nothing
+    /// to type, so it is pinned by name instead.
+    function chooseProviderRow(row) {
+        if (String(row.identifier).length > 0) {
+            root.chooseProvider(row.identifier);
+            return;
+        }
+        root.showingProviders = false;
+        S.LauncherService.setScope(row.name);
+        inputField.text = "";
+        inputField.forceActiveFocus();
+    }
+
     function chooseProvider(prefix) {
         showingProviders = false;
+        S.LauncherService.setScope("");
         inputField.text = prefix;
         inputField.forceActiveFocus();
         S.LauncherService.setQuery(inputField.text);
@@ -122,10 +141,20 @@ PanelWindow {
 
     function applyPendingProvider() {
         if (root.pendingProvider.length === 0) return;
-        const prefix = S.LauncherService.prefixForProvider(root.pendingProvider);
-        if (prefix.length === 0) return;
+        // Wait for the backend to answer before deciding there is no prefix, or a launcher opened
+        // straight into a provider would fall back to pinning every time.
+        if (!S.LauncherService.providersLoaded) return;
+        const name = root.pendingProvider;
         root.pendingProvider = "";
-        root.chooseProvider(prefix);
+        const prefix = S.LauncherService.prefixForProvider(name);
+        if (prefix.length > 0) {
+            root.chooseProvider(prefix);
+            return;
+        }
+        // No prefix to type: pin the launcher to it by name.
+        S.LauncherService.setScope(name);
+        inputField.text = "";
+        inputField.forceActiveFocus();
     }
 
     // A row's data lives in the model; listView.itemAtIndex() only answers once a delegate for
@@ -143,7 +172,7 @@ PanelWindow {
         const row = root.rowAt(currentIndex);
         if (!row) return;
         if (root.showingProviders) {
-            root.chooseProvider(row.identifier);
+            root.chooseProviderRow(row);
             return;
         }
         S.LauncherService.activate(row.provider, row.identifier, row.action);
@@ -155,6 +184,7 @@ PanelWindow {
     }
 
     function scopedProvider() {
+        if (S.LauncherService.scope.length > 0) return S.LauncherService.scope;
         const prefix = S.LauncherService.prefixFor(inputField.text);
         if (prefix.length > 0) return prefix === S.LauncherService.allPrefix ? "" : S.LauncherService.providerForPrefix(prefix);
         if (S.LauncherService.providerAvailable("calc") && S.LauncherService.isMathQuery(inputField.text)) return "calc";
