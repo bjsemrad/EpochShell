@@ -221,8 +221,13 @@ Singleton {
             return;
         }
         // A pinned provider wins over prefix routing: the text is all query, no prefix to strip.
+        // The "*" scope is the same sentinel the prefix routing uses, and means every provider
+        // rather than one named "*".
         if (root.scope.length > 0) {
-            root.startQuery(root.scope, raw.trim());
+            const scoped = root.scope === root.allPrefix
+                ? root.enabledProviders(root.defaultProviders)
+                : root.scope;
+            root.startQuery(scoped, raw.trim());
             return;
         }
         const prefix = root.prefixFor(raw);

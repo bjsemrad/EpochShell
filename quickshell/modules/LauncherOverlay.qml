@@ -213,12 +213,15 @@ PanelWindow {
         if (root.showingProviders) return "Choose provider";
         if (S.LauncherService.prefixFor(inputField.text) === S.LauncherService.allPrefix) return "All providers";
         const provider = root.scopedProvider();
+        // The "*" scope is every provider, not one with that name.
+        if (provider === S.LauncherService.allPrefix) return "All providers";
         return provider.length > 0 ? S.LauncherService.prettyName(provider) : "All providers";
     }
 
     function activeProvider() {
         if (root.showingProviders) return "";
         const provider = root.scopedProvider();
+        if (provider === S.LauncherService.allPrefix) return "";
         return provider.indexOf(",") === -1 ? provider : "";
     }
 
