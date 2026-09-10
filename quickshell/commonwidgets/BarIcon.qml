@@ -14,6 +14,7 @@ Rectangle {
     required property string iconText
     required property bool mouseEnabled
     property int fontPixelSize: T.Config.barIconSize
+    property color iconColor: T.Config.surfaceText
 
     function performLeftClickAction() {
         console.log("Missing Implementation");
@@ -50,7 +51,7 @@ Rectangle {
             font.pixelSize: root.fontPixelSize
             font.family: T.Config.fontFamily
             anchors.centerIn: parent
-            color: T.Config.surfaceText
+            color: root.iconColor
         }
     }
 }

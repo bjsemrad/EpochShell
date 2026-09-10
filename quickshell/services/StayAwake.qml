@@ -85,10 +85,14 @@ Singleton {
         onTriggered: root.seconds += 1
     }
 
+    // triggeredOnStart matters more than the interval: a request sent from the connect handler is
+    // dropped when the socket is not writable yet, and without this the state stays unknown -- and
+    // anything bound to it invisible -- until the first tick half a minute later.
     Timer {
         interval: 30000
         repeat: true
         running: root.connected
+        triggeredOnStart: true
         onTriggered: root.refresh()
     }
 

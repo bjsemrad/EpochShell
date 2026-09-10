@@ -12,6 +12,10 @@ Singleton {
     property bool doNotDisturb: false
     property int unreadCount: 0
     readonly property int historyLimit: 30
+    // How long a notification stays in the centre before it clears itself. An hour is long enough
+    // to come back from a meeting and see what was missed, and short enough that the list is not a
+    // week of noise. Zero keeps everything until it is dismissed or pushed out by historyLimit.
+    readonly property int historyLifetimeMinutes: 60
     readonly property int normalTimeout: 3500
     readonly property int lowTimeout: 2000
     readonly property string imageStateDir: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/epochshell/notifications/images/"
@@ -315,9 +319,14 @@ Singleton {
 
     function addHistory(item) {
         historyModel.insert(0, item);
+        // Rows pushed off the end are gone as surely as dismissed ones, and their thumbnails have
+        // nothing left pointing at them.
+        const stems = [];
         while (historyModel.count > historyLimit) {
+            stems.push(stemFor(historyModel.get(historyModel.count - 1)));
             historyModel.remove(historyModel.count - 1);
         }
+        forgetImages(stems);
     }
 
     function dismissToast(index) {
@@ -345,8 +354,57 @@ Singleton {
     }
 
     function clearHistory() {
+        const stems = [];
+        for (let i = 0; i < historyModel.count; i++) {
+            stems.push(stemFor(historyModel.get(i)));
+        }
         historyModel.clear();
         unreadCount = 0;
+        forgetImages(stems);
+    }
+
+    /// Drop history entries older than historyLifetimeMinutes.
+    ///
+    /// Critical notifications are left alone: something that asked not to time out as a toast has
+    /// not become less important an hour later, and quietly discarding it is how a failed backup
+    /// goes unnoticed.
+    function expireHistory() {
+        if (historyLifetimeMinutes <= 0) return;
+        const cutoff = Date.now() - historyLifetimeMinutes * 60000;
+        let removed = 0;
+        const stems = [];
+        // Backwards, because removing shifts everything after it -- and the oldest are at the end.
+        for (let i = historyModel.count - 1; i >= 0; i--) {
+            const item = historyModel.get(i);
+            if (item.urgency === NotificationUrgency.Critical) continue;
+            if (Number(item.timestamp) > cutoff) continue;
+            closeLiveNotification(item.notificationId);
+            stems.push(stemFor(item));
+            historyModel.remove(i);
+            removed += 1;
+        }
+        // Anything expired was never read, so the badge should not keep counting it.
+        if (removed > 0) unreadCount = Math.max(0, unreadCount - removed);
+        if (stems.length > 0) forgetImages(stems);
+    }
+
+    /// Delete the thumbnails a set of history entries had persisted.
+    ///
+    /// Nothing else does this: dismissing an entry, clearing the list, and being pushed out by
+    /// historyLimit all drop the row and leave its files behind, which is why the state directory
+    /// grows without bound. Expiring on a timer would have made that worse rather than starting it.
+    function stemFor(item) {
+        return String(item.timestamp) + "-" + String(item.notificationId);
+    }
+
+    function forgetImages(stems) {
+        const paths = [];
+        for (let i = 0; i < stems.length; i++) {
+            paths.push(imageStateDir + stems[i] + "-image");
+            paths.push(imageStateDir + stems[i] + "-appIcon");
+        }
+        if (paths.length === 0) return;
+        Quickshell.execDetached(["rm", "-f"].concat(paths));
     }
 
     function dismissHistory(index) {
@@ -355,7 +413,9 @@ Singleton {
         const item = historyModel.get(index);
         closeLiveNotification(item.notificationId);
         removeToastById(item.notificationId);
+        const stem = stemFor(item);
         historyModel.remove(index);
+        forgetImages([stem]);
     }
 
     function markRead() {
@@ -464,6 +524,25 @@ Singleton {
 
     ListModel {
         id: historyModel
+    }
+
+    // Thumbnails outlive their history entries in one case this cannot see: a shell restart drops
+    // the whole list, and the files it had written stay. One sweep at startup collects those --
+    // anything older than the lifetime cannot belong to a row that still exists.
+    Component.onCompleted: {
+        if (root.historyLifetimeMinutes > 0) {
+            Quickshell.execDetached(["find", root.imageStateDir, "-maxdepth", "1", "-type", "f",
+                "-mmin", "+" + root.historyLifetimeMinutes, "-delete"]);
+        }
+    }
+
+    // A minute is finer than anyone reads the list, and the sweep is a walk over at most
+    // historyLimit rows.
+    Timer {
+        interval: 60000
+        repeat: true
+        running: root.historyLifetimeMinutes > 0
+        onTriggered: root.expireHistory()
     }
 
     NotificationServer {

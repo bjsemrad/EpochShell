@@ -7,7 +7,6 @@ import qs.popups
 import qs.modules
 import qs.modules.audio
 import qs.modules.compositor
-import qs.modules.system
 import qs.services as S
 
 Scope {
@@ -90,11 +89,6 @@ Scope {
                     Weather {
                         id: weather
                         popup: weatherPanel
-                    },
-                    // Only on screen while the machine is being held awake, so the centre of the
-                    // bar stays as it was the rest of the time.
-                    StayAwakeIndicator {
-                        Layout.alignment: Qt.AlignVCenter
                     },
                     BarFill {}
                 ]

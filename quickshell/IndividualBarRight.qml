@@ -13,6 +13,7 @@ import qs.modules.tailscale
 import qs.modules.localsend
 import qs.modules.capture
 import qs.modules.nix
+import qs.modules.system
 import qs.modules.homeassistant
 import qs.modules.wifi
 import qs.modules.notifications
@@ -38,6 +39,9 @@ RowLayout {
         readonly property bool showLocalSendAlert: S.LocalSend.hasIncomingFiles || (expanded && S.LocalSend.connected)
         // Updates waiting are worth seeing with the drawer shut; a system that is up to date is
         // only worth a look when the drawer is open anyway.
+        // Holding the machine awake is worth seeing with the drawer shut, the way a waiting
+        // Taildrop is; the control itself is a drawer tool the rest of the time.
+        readonly property bool showIdleAlert: S.StayAwake.enabled || (expanded && S.StayAwake.available)
         readonly property bool showNixAlert: S.NixUpdates.hasUpdates || (expanded && S.NixUpdates.available)
         readonly property bool showTailscaleAlert: S.Tailscale.hasIncomingFiles || (expanded && S.Tailscale.available)
         // The drawer's width is measured from what is actually in it rather than counted.
@@ -228,6 +232,10 @@ RowLayout {
                 Layout.alignment: Qt.AlignVCenter
                 visible: S.NixUpdates.connected && drawer.showNixAlert
                 popup: nixPanel
+            }
+            IdleInhibitorToggle {
+                Layout.alignment: Qt.AlignVCenter
+                visible: S.StayAwake.connected && drawer.showIdleAlert
             }
             LocalSendNetwork {
                 id: localSend
