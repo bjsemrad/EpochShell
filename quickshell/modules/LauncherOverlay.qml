@@ -127,26 +127,19 @@ PanelWindow {
 
     /// Scope the launcher to the provider a list row describes.
     ///
-    /// A row carries its prefix as the identifier, and typing that prefix is the cheapest way to
-    /// scope -- but a provider without one (any menu that has not been given a prefix) has nothing
-    /// to type, so it is pinned by name instead.
+    /// Always by name, never by typing the provider's prefix into the field. Opening straight into
+    /// Files should look like opening straight into Apps -- an empty box ready for a query -- and a
+    /// leading "/" the user did not type is something to delete before they can start. The header
+    /// says which provider is active; the box is for what they are looking for.
     function chooseProviderRow(row) {
-        if (String(row.identifier).length > 0) {
-            root.chooseProvider(row.identifier);
-            return;
-        }
-        root.showingProviders = false;
-        S.LauncherService.setScope(row.name);
-        inputField.text = "";
-        inputField.forceActiveFocus();
+        root.scopeTo(row.name);
     }
 
-    function chooseProvider(prefix) {
-        showingProviders = false;
-        S.LauncherService.setScope("");
-        inputField.text = prefix;
+    function scopeTo(name) {
+        root.showingProviders = false;
+        S.LauncherService.setScope(name);
+        inputField.text = "";
         inputField.forceActiveFocus();
-        S.LauncherService.setQuery(inputField.text);
     }
 
     // Jumps straight to a provider by name, which is how a menu is opened now that each one is a
@@ -177,20 +170,9 @@ PanelWindow {
 
     function applyPendingProvider() {
         if (root.pendingProvider.length === 0) return;
-        // Wait for the backend to answer before deciding there is no prefix, or a launcher opened
-        // straight into a provider would fall back to pinning every time.
-        if (!S.LauncherService.providersLoaded) return;
         const name = root.pendingProvider;
         root.pendingProvider = "";
-        const prefix = S.LauncherService.prefixForProvider(name);
-        if (prefix.length > 0) {
-            root.chooseProvider(prefix);
-            return;
-        }
-        // No prefix to type: pin the launcher to it by name.
-        S.LauncherService.setScope(name);
-        inputField.text = "";
-        inputField.forceActiveFocus();
+        root.scopeTo(name);
     }
 
     // A row's data lives in the model; listView.itemAtIndex() only answers once a delegate for
@@ -493,6 +475,16 @@ PanelWindow {
                         selectionColor: T.Config.accent
                         selectByMouse: true
                         activeFocusOnTab: false
+
+                        // With no prefix in the box, backspace on an empty query is what
+                        // "delete the prefix to go back" used to be.
+                        Keys.onPressed: event => {
+                            if (event.key !== Qt.Key_Backspace) return;
+                            if (inputField.text.length > 0) return;
+                            if (S.LauncherService.scope.length === 0) return;
+                            S.LauncherService.setScope("");
+                            event.accepted = true;
+                        }
 
                         Keys.onDownPressed: event => {
                             root.moveSelection(1);
@@ -820,7 +812,7 @@ PanelWindow {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.chooseProvider(identifier)
+                            onClicked: root.scopeTo(name)
                         }
                     }
                 }
