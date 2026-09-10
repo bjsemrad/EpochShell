@@ -212,7 +212,10 @@ Singleton {
     function runQuery() {
         debounceTimer.stop();
         const raw = query;
-        if (raw === ";") {
+        // Anything starting with ";" is the provider list, which the overlay draws from its own
+        // model -- including ";cap", which filters it. Running a search for that text would put
+        // app results underneath a list that is not showing them.
+        if (raw.startsWith(";")) {
             resultModel.clear();
             root.resultsUpdated();
             return;

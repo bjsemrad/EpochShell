@@ -44,14 +44,35 @@ PanelWindow {
 
     // Mirrors whatever EpochOxide reports: one row per live provider, labelled and prefixed the
     // way the backend describes itself, plus the synthetic "search everything" row.
+    /// The text the provider list is being filtered by: whatever follows the ";".
+    function providerFilter() {
+        const text = inputField.text;
+        return text.startsWith(";") ? text.slice(1).trim().toLowerCase() : "";
+    }
+
+    /// Whether a provider matches what has been typed. Name, label and description all count, so
+    /// "cap" finds Capture and "screenshot" finds it by what it does.
+    function providerMatches(filter, name, label, description, prefix) {
+        if (filter.length === 0) return true;
+        return [name, label, description, prefix]
+            .some(field => String(field || "").toLowerCase().indexOf(filter) !== -1);
+    }
+
     function buildProviderMenu() {
+        const filter = root.providerFilter();
         providerModel.clear();
         for (const cap of S.LauncherService.providerCapabilities) {
             if (!cap.supportsQuery) continue;
             const prefix = cap.prefixes.length > 0 ? cap.prefixes[0] : "";
+            if (!root.providerMatches(filter, cap.name, cap.namePretty, cap.description, prefix)) continue;
             root.appendProviderRow(cap.name, prefix, cap.namePretty, cap.description, cap.icon);
         }
-        root.appendProviderRow(S.LauncherService.allPrefix, S.LauncherService.allPrefix, "All providers", "Search across every provider", "");
+        if (root.providerMatches(filter, "all", "All providers", "Search across every provider", S.LauncherService.allPrefix)) {
+            root.appendProviderRow(S.LauncherService.allPrefix, S.LauncherService.allPrefix, "All providers", "Search across every provider", "");
+        }
+        // Whatever was selected before is meaningless against a different list.
+        root.currentIndex = providerModel.count > 0 ? 0 : -1;
+        listView.currentIndex = root.currentIndex;
     }
 
     visible: _visible
@@ -491,7 +512,8 @@ PanelWindow {
                         }
 
                         onTextChanged: {
-                            showingProviders = text === ";";
+                            showingProviders = text.startsWith(";");
+                            if (showingProviders) root.buildProviderMenu();
                             S.LauncherService.setQuery(text);
                         }
                     }
