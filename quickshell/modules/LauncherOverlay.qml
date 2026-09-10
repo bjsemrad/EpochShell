@@ -46,8 +46,7 @@ PanelWindow {
     // way the backend describes itself, plus the synthetic "search everything" row.
     /// The text the provider list is being filtered by: whatever follows the ";".
     function providerFilter() {
-        const text = inputField.text;
-        return text.startsWith(";") ? text.slice(1).trim().toLowerCase() : "";
+        return root.showingProviders ? inputField.text.trim().toLowerCase() : "";
     }
 
     /// Whether a provider matches what has been typed. Name, label and description all count, so
@@ -154,11 +153,8 @@ PanelWindow {
     /// first keystroke for one route and not the other.
     function openProviders() {
         root.open();
-        inputField.text = ";";
         root.showingProviders = true;
         root.buildProviderMenu();
-        root.currentIndex = providerModel.count > 0 ? 0 : -1;
-        listView.currentIndex = root.currentIndex;
         inputField.forceActiveFocus();
     }
 
@@ -202,8 +198,10 @@ PanelWindow {
     }
 
     function scopedProvider() {
-        if (S.LauncherService.scope.length > 0) return S.LauncherService.scope;
-        const prefix = S.LauncherService.prefixFor(inputField.text);
+        // A prefix the user just typed is a deliberate override of wherever they were pinned.
+        const typed = S.LauncherService.prefixFor(inputField.text);
+        if (typed.length === 0 && S.LauncherService.scope.length > 0) return S.LauncherService.scope;
+        const prefix = typed;
         if (prefix.length > 0) return prefix === S.LauncherService.allPrefix ? "" : S.LauncherService.providerForPrefix(prefix);
         if (S.LauncherService.providerAvailable("calc") && S.LauncherService.isMathQuery(inputField.text)) return "calc";
         return root.defaultScope();
@@ -484,6 +482,14 @@ PanelWindow {
                         Keys.onPressed: event => {
                             if (event.key !== Qt.Key_Backspace) return;
                             if (inputField.text.length > 0) return;
+                            // With no prefix in the box, backspace on an empty query is the way
+                            // back out of the provider list, and out of a pinned provider.
+                            if (root.showingProviders) {
+                                root.showingProviders = false;
+                                S.LauncherService.setQuery("");
+                                event.accepted = true;
+                                return;
+                            }
                             if (S.LauncherService.scope.length === 0) return;
                             S.LauncherService.setScope("");
                             event.accepted = true;
@@ -507,8 +513,22 @@ PanelWindow {
                         }
 
                         onTextChanged: {
-                            showingProviders = text.startsWith(";");
-                            if (showingProviders) root.buildProviderMenu();
+                            // ";" as the first character opens the provider list, and is not left
+                            // sitting in the box: the list is a mode, and what is typed after it
+                            // filters that list rather than being part of a query.
+                            if (!root.showingProviders && text === ";") {
+                                // The mode goes on before the text is cleared: clearing re-enters
+                                // this handler, and it has to arrive with the mode already set.
+                                root.showingProviders = true;
+                                inputField.text = "";
+                                root.buildProviderMenu();
+                                S.LauncherService.setQuery("");
+                                return;
+                            }
+                            if (root.showingProviders) {
+                                root.buildProviderMenu();
+                                return;
+                            }
                             S.LauncherService.setQuery(text);
                         }
                     }

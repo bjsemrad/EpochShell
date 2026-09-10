@@ -220,23 +220,22 @@ Singleton {
             root.resultsUpdated();
             return;
         }
-        // A pinned provider wins over prefix routing: the text is all query, no prefix to strip.
-        // The "*" scope is the same sentinel the prefix routing uses, and means every provider
-        // rather than one named "*".
-        if (root.scope.length > 0) {
-            const scoped = root.scope === root.allPrefix
-                ? root.enabledProviders(root.defaultProviders)
-                : root.scope;
-            root.startQuery(scoped, raw.trim());
-            return;
-        }
         const prefix = root.prefixFor(raw);
         let providers;
         let q;
         const prefixedProvider = root.providerForPrefix(prefix);
+        // A typed prefix wins over a pinned provider: it is how someone moves from one provider to
+        // another without going back out first, and it is unambiguous about what they meant.
         if (prefixedProvider.length > 0) {
             providers = prefixedProvider;
             q = raw.slice(prefix.length);
+        } else if (root.scope.length > 0) {
+            // Pinned: the text is all query, with no prefix to strip. The "*" scope is the same
+            // sentinel the prefix routing uses, and means every provider rather than one named "*".
+            providers = root.scope === root.allPrefix
+                ? root.enabledProviders(root.defaultProviders)
+                : root.scope;
+            q = raw.trim();
         } else if (root.providerAvailable("calc") && root.isMathQuery(raw)) {
             providers = "calc";
             q = raw.trim();
